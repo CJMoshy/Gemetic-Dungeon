@@ -1,5 +1,6 @@
 import * as XXH from "./xxhash.min.js";
-class Dungeon {
+ 
+export class Dungeon {
     // dungeon base class will:
         //contain a list of the rooms that have been "cleared"
         //contain reference to the "active" room and the player's position
@@ -36,10 +37,11 @@ class Dungeon {
         this.initialPlayerSeedString = this.seedInput ? this.seedInput.innerText : "defaultSeed"
         this.seed = XXH.h32(this.initialPlayerSeedString, 0)
         this.currentRoom = new Room(this.seed, this.skewW, this.skewF, this.skewE, this.skewA);
+        console.log("good afternoon!")
     }
 }
 
-class Room {
+export class Room {
     myRandom:SubRandom;
     constructor(tier:number, skewW:number, skewF:number, skewE:number, skewA:number){
         this.myRandom = new SubRandom(tier)

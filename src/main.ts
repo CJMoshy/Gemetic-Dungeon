@@ -1,5 +1,7 @@
 import Phaser from "phaser"
 
+import * as Gen from "./generator"
+
 const CONFIG = {
     type: Phaser.CANVAS,
     parent: 'phaser-game',
@@ -25,3 +27,4 @@ const CONFIG = {
 
 const GAME = new Phaser.Game(CONFIG)
 
+const dungeon = new Gen.Dungeon()
