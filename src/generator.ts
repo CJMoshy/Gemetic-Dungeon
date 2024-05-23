@@ -29,8 +29,8 @@ export class Dungeon {
     currentRoom: Room;
 
     //max width and height defaults:
-    maxW = 10
-    maxH = 10
+    maxW = 100
+    maxH = 100
     seed: number;
     constructor(seed: number, initialGene: string) { //The seed should be pulled from DOM, initialGene comes out of CJ's map.
         this.seed = seed
@@ -43,6 +43,7 @@ export class Dungeon {
 
 class Room {
     r: SubRandom;
+    seed;
     gene;
     geneRegex: RegExp = new RegExp('^[WEFA]+$', 'g')
     cols;
@@ -68,6 +69,7 @@ class Room {
         if (!this.geneRegex.test(gene)) { throw ("Room: Constructor: Gene does not match gene regex pattern.") }
         //console.log(this.geneRegex.test(gene))
         this.r = new SubRandom(seed)
+        this.seed = seed
         this.gene = gene
         this.cols = width
         this.rows = height
@@ -78,14 +80,24 @@ class Room {
         this.obstacleType = gene[2]
         this.wallDeco = gene[3] == "W" || gene[3] == "F" ? 0 : (gene[3] == "E" ? 1 : -1)
         this.connectionType = gene[4]
+        /*connection types:
+        W = no corridors, rooms touch, slightly overlapping.
+        E = Elbow corridors
+        F = Rectangle corridors
+        A = All corridors branch out from a center room.
+        */
         this.enemyType = gene[5]
         this.floorStyle = gene[6]
         this.theme = gene[7]
 
         //second: initialize the empty state of the room.
         this.initMap()
-        //third: fill the map with large shapes which will be the main areas of the room.
+        //third: fill the map its empty rooms, connections, and wall alterations.
+        this.basicShapes()
         //space and connect these rooms based on gene[4] - connection type.
+
+        console.log("Finished creating the room.")
+        console.log(`${this}`) //forces pretty toString.
     }
 
     private initMap() { //called during constructor, do not call from outside.
@@ -96,12 +108,27 @@ class Room {
                 this.tiles[i].push(".")
             }
         }
-        this.prettyPrint()
-        //console.log(this.tiles)
-
+        //console.log(`${this}`)
     }
-    public prettyPrint() {
+    private basicShapes(){
+        //Min of 4 subrooms, max of 10.
+        let numSubrooms = Math.floor(this.r.getR(6)) + 4
+        //decide the radius of each subroom based on the number, assuming grid size is hardcoded to 100x100.
+        //this radius will be mutated by -1, 0, or 1 when the subroom is constructed in order to create variation.
+        let subroomRadius = Math.floor(16 * (0.9 ** (numSubrooms-4))) //max radius: 16, min radius: 5
+        //decide the distance between subrooms based on their size and the corridor connection type.
+        //smaller subrooms have medium connections, larger have short, and medium have long.
+        let distanceBetween;
+        //if () //YOU WERE HERE
+    }
+    // thank you stackoverflow for tostring override help
+    //https://stackoverflow.com/questions/35361482/typescript-override-tostring
+    public toString = () : string => {
         let _str: string = ""
+        _str += "Seed: " + this.seed + "\n";
+        _str += "Gene: " + this.gene + "\n";
+        _str += "Width: " + this.cols + " Height: " + this.rows + "\n";
+        _str += "Map: " + "\n";
         for (let i = 0; i < this.rows; i++) {
             let _row: string = "";
             for (let j = 0; j < this.cols; j++) {
@@ -109,7 +136,7 @@ class Room {
             }
             _str += _row + "\n"
         }
-        console.log(_str)
+        return _str
     }
 }
 
