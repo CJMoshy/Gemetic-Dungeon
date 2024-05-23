@@ -27,85 +27,94 @@ export class Dungeon {
     //1/2 of "gems" in room to open.
     //only stores current room: can't go backward
     currentRoom: Room;
-    skewW = 0; //the skew TOWARDS water-type rooms
-    skewE = 0; // towards earth rooms
-    skewF = 0; // towards fire rooms
-    skewA = 0; //towards air rooms
-    //skews should always be zero or larger.
+
     //max width and height defaults:
-    maxW = 25
-    maxH = 25
-    seedInput = document.getElementById("playerSeedEntry");
-    initialPlayerSeedString: string;
+    maxW = 10
+    maxH = 10
     seed: number;
-    constructor() {
-        this.initialPlayerSeedString = this.seedInput ? this.seedInput.innerText : "defaultSeedaaaaaaaaaaaaa"
-        this.seed = XXH.h32(this.initialPlayerSeedString, 0)._high
+    constructor(seed: number, initialGene: string) { //The seed should be pulled from DOM, initialGene comes out of CJ's map.
+        this.seed = seed
         console.log("dungon: result of hash =", this.seed)
         //the initial room will be based on seed alone; the skews will all be zero.
-        this.currentRoom = new Room(this.seed, this.skewW, this.skewE, this.skewF, this.skewA, this.maxW, this.maxH);
+        this.currentRoom = new Room(this.seed, "WWWWWWWW", this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
     }
 }
 
-enum THEME { WATER, EARTH, FIRE, AIR }
 class Room {
     r: SubRandom;
-    theme: THEME
-    map: string[][] = [[]];
-    skewW;
-    skewE;
-    skewF;
-    skewA;
+    gene;
+    geneRegex: RegExp = new RegExp('^[WEFA]+$', 'g')
     cols;
     rows;
-    constructor(seed: number, skewW: number, skewE: number, skewF: number, skewA: number, width: number, height: number) {
-        if (skewW < 0 || skewE < 0 || skewF < 0 || skewA < 0) { throw ("Room: constructor: One or more skews below zero.") }
+    tiles: string[][] = [];
+
+    gemCenters: object = [] //accepts [x,y] arrays of coordinates
+    gemEnds: object = [] //accepts [x,y] arrays of coordinates
+    //gemCenters and gemEnds are modified every time a room or corridor is created. They will act as viable places for gems to spawn.
+
+    //genetic traits:
+    roomShape: string; //W - ellipse, E - square, F - long rect, A - triangle
+    gemSpawnStyle: string;
+    obstacleType: string;
+    wallDeco: number; //-1 - concave, 0 - flat, 1 - convex
+    connectionType:string;
+    enemyType:string;
+    floorStyle:string;
+    theme:string; //W,E,F,A
+
+    constructor(seed: number, gene: string/*length 8*/, width: number, height: number) {
+        if (gene.length != 8) { throw ("Room:Constructor:Gene not length 8.") }
+        if (!this.geneRegex.test(gene)) { throw ("Room: Constructor: Gene does not match gene regex pattern.") }
+        //console.log(this.geneRegex.test(gene))
         this.r = new SubRandom(seed)
-        this.skewW = skewW
-        this.skewE = skewE
-        this.skewF = skewF
-        this.skewA = skewA
+        this.gene = gene
         this.cols = width
         this.rows = height
-        //first, decide room theme. This is locked to the opposite of the highest skew.
-        //case 1: all are equal
-        if (skewW == skewE && skewE == skewF && skewF == skewA) { this.theme = Math.floor(this.r.getR(4)) }
-        //case 2: there is a max; if there are multiple at the same skew, sorry, it'll just grab the first.
-        else {
-            let th = Math.max(skewW, skewE, skewF, skewA)
-            switch (th) {
-                case skewW:
-                    this.theme = THEME.WATER
-                    break;
-                case skewE:
-                    this.theme = THEME.EARTH
-                    break;
-                case skewF:
-                    this.theme = THEME.FIRE
-                    break;
-                default:
-                    this.theme = THEME.AIR
-                    break;
-            }
-        }
-        console.log("Room: Constructor: This room's main theme is: ", THEME[this.theme])
 
-        //next: generate the shape of the room. delegating this to initMap().
+        //first: set genetic traits based on gene-string.
+        this.roomShape = gene[0]
+        this.gemSpawnStyle = gene[1]
+        this.obstacleType = gene[2]
+        this.wallDeco = gene[3] == "W" || gene[3] == "F" ? 0 : (gene[3] == "E" ? 1 : -1)
+        this.connectionType = gene[4]
+        this.enemyType = gene[5]
+        this.floorStyle = gene[6]
+        this.theme = gene[7]
+
+        //second: initialize the empty state of the room.
         this.initMap()
+        //third: fill the map with large shapes which will be the main areas of the room.
+        //space and connect these rooms based on gene[4] - connection type.
     }
 
     private initMap() { //called during constructor, do not call from outside.
-        for (let i = 0; i < this.rows; i++) { //fill our "map" with empty spaces.
+        //fill our "map" with empty spaces.
+        for (let i = 0; i < this.rows; i++) {
+            this.tiles.push([])
             for (let j = 0; j < this.cols; j++) {
-                this.map[i][j] = "."
+                this.tiles[i].push(".")
             }
         }
+        this.prettyPrint()
+        //console.log(this.tiles)
 
+    }
+    public prettyPrint() {
+        let _str: string = ""
+        for (let i = 0; i < this.rows; i++) {
+            let _row: string = "";
+            for (let j = 0; j < this.cols; j++) {
+                _row += this.tiles[i][j]
+            }
+            _str += _row + "\n"
+        }
+        console.log(_str)
     }
 }
 
-class SubRandom { //this class exists so we can control and manipulate different instances of generators at the same time.
+
+class SubRandom { //this class exists so I can control a room's RNG, isolated from Math.random & Math.noise
     seed = 0;
     constructor(_seed: number) {
         this.seed = _seed;

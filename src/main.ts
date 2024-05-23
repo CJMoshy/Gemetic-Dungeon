@@ -24,6 +24,6 @@ const CONFIG = {
     },
     scene: []
 }
-const DUNGEON = new Gen.Dungeon()
+const DUNGEON = new Gen.Dungeon(5, "WWWWWWWW")
 
 const GAME = new Phaser.Game(CONFIG)
