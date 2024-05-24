@@ -24,6 +24,6 @@ const CONFIG = {
     },
     scene: []
 }
-const DUNGEON = new Gen.Dungeon(5, "WWWWWWWW")
+const DUNGEON = new Gen.Dungeon(Math.random()*4294967296, "WWWWWWWW")
 
 const GAME = new Phaser.Game(CONFIG)
