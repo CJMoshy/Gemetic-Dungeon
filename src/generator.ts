@@ -185,19 +185,19 @@ class Room {
                 from there, tries to make rooms towards the center of the opposite quadrant. If it is able to reach that point, picks a new, unused quadrant, and looks towards that.
                 */
                 let quadrant = Math.floor(this.r.getR(4))
-                let target:number[] = [0,0];
+                let target: number[] = [0, 0];
                 switch (quadrant) {
                     case 0:
-                        potentialCenter = [75, 25]
-                        target = [25, 75]
+                        potentialCenter = [25, 75]
+                        target = [75, 75]
                         break;
                     case 1:
                         potentialCenter = [25, 25]
                         target = [75, 75]
                         break;
                     case 2:
-                        potentialCenter = [25, 75]
-                        target = [75, 25]
+                        potentialCenter = [75, 25]
+                        target = [25, 75]
                         break;
                     case 3:
                         potentialCenter = [75, 75]
@@ -209,6 +209,41 @@ class Room {
                 potentialCenter[1] *= this.r.getR(0.5) + 0.75
                 target[0] *= this.r.getR(0.5) + 0.75
                 target[1] *= this.r.getR(0.5) + 0.75
+                let dy = target[0] - potentialCenter[0],
+                    dx = target[1] - potentialCenter[1]
+                //set firstpass of radii
+                currRadius = Math.floor(subroomRadius * (this.r.getR(0.4) + 0.8))
+                nextRadius = Math.floor(subroomRadius * (this.r.getR(0.4) + 0.8))
+                //loop thru rooms
+                for (let nRooms = 0; nRooms <= numSubrooms;) {
+                    if (Math.sqrt(dy * dy + dx * dx) >= currRadius + nextRadius + distanceBetween) { //we have not yet reached our destination.
+                        let hypotenuse = currRadius + nextRadius + distanceBetween
+                        let theta = Math.atan(dx / dy)
+                        theta *= this.r.getR(0.2) + 0.9
+                        let dy2 = hypotenuse * Math.cos(theta)
+                        let dx2 = hypotenuse * Math.sin(theta)
+                        let temp = [Math.floor(potentialCenter[0] + dy2), Math.floor(potentialCenter[1] + dx2)]
+                        potentialCenter = temp
+                        currRadius = nextRadius
+                        nextRadius = Math.floor(subroomRadius * (this.r.getR(0.4) + 0.8))
+
+                        //set centerpoint to be a ! & push to gem center/edge array.  
+                        this.tiles[potentialCenter[0]][potentialCenter[1]] = "!"
+                        this.pushRoomGemArray(potentialCenter, currRadius)
+                        nRooms++
+                    } else { //need to tg a new quadrant
+                        switch (target) {
+                            case [75, 25]: //original path was from q2 to q0
+                                break;
+                            case [25, 25]: //original path was from q3 to q1
+                                break;
+                            case [75, 25]: //original path was from q0 to q2
+                                break;
+                            case [75, 75]: //original path was from q1 to q3
+                                break;
+                        }
+                    }
+                }
                 break;
 
         }
@@ -249,10 +284,10 @@ class Room {
     }
     private decoGemArrayDebug() {
         this.gemCenters.forEach(element => {
-            this.tiles[element[0]][element[1]] = "x"
+            this.tiles[element[0]][element[1]] = "!"
         });
         this.gemEnds.forEach(element => {
-            this.tiles[element[0]][element[1]] = "c"
+            this.tiles[element[0]][element[1]] = "x"
         });
     }
 
