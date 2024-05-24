@@ -2,30 +2,9 @@ import * as XXH from "./xxhash.min.js";
 
 export class Dungeon {
     // dungeon base class will:
-    //contain a list of the rooms that have been "cleared"
-    //contain reference to the "active" room and the player's position
-    //generate and draw a room deterministically based on the position of the room
-
-    //rules for rooms:
-    //each room has an elemental skew, which will effect a few things
-    //water skew 
-    //more likely to have "puddles", impassable, circular shapes
-    //are circular or composed of circles
-    //large and open.
-    //fire skew
-    //more likely to have "braziers", single-tile pillar walls
-    //long and rectangular hallways
-    //more enemies
-    //earth skew
-    //denser, mazelike passageways
-    //rooms that branch off to the sides
-    //squarelike, geometric
-    //air skew
-    //open floor, with ringed barriers
-    // circular subrooms connected by bridges
-    //each room has an "entrance" and an "exit", entrance can't be returned through, exit needs
-    //1/2 of "gems" in room to open.
-    //only stores current room: can't go backward
+    //contain reference to the "active"
+    //generate and draw a room deterministically based on the seed and gene
+    
     currentRoom: Room;
 
     //max width and height defaults:
@@ -174,13 +153,14 @@ class Room {
 
                     //need code here to fill around the room with floor tiles
                     //
-                    potentialCenter = this.nextRoomCenterWater(potentialCenter, distanceBetween, currRadius, nextRadius)
+                    this.fillRoomCircle(potentialCenter, currRadius)
+                    potentialCenter = this.nextRoomCenter(potentialCenter, distanceBetween, currRadius, nextRadius)
                 }
 
         }
 
     }
-    private nextRoomCenterWater(currCenter: number[], distanceBetween: number, currRadius: number, nextRadius: number):number[] {
+    private nextRoomCenter(currCenter: number[], distanceBetween: number, currRadius: number, nextRadius: number):number[] {
         console.log("Inside nRCW, currcenter is: ", currCenter)
         //creates the next center for the room, and connects two rooms via hallway if applicable.
         //uses the Water style of determining room placement.
@@ -219,6 +199,26 @@ class Room {
         return [-1, -1] //bad return, should never get here.
     }
 
+    private fillRoomCircle(currCenter:number[], currRadius:number){
+        //should double check for valid center.
+        //fill radius of map around point with floor tiles, circle style.
+
+    }
+    private fillRoomRectangle(currCenter:number[], currWidth:number, currHeight:number){
+        //should double check for valid center.
+        //fill radius of map around point with floor tiles, rect style.
+
+    }
+    private fillRoomSquare(currCenter:number[], currRadius:number){
+        //should double check for valid center.
+        //fill radius of map around point with floor tiles, square style.
+
+    }
+    private fillRoomTriangle(currCenter:number[], currRadius:number){
+        //should double check for valid center.
+        //fill radius of map around point with floor tiles, triangle style.
+
+    }
 
     // thank you stackoverflow for tostring override help
     //https://stackoverflow.com/questions/35361482/typescript-override-tostring
