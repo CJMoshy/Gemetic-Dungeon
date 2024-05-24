@@ -50,19 +50,20 @@ class Room {
     rows;
     tiles: string[][] = [];
 
-    gemCenters: object = [] //accepts [x,y] arrays of coordinates
-    gemEnds: object = [] //accepts [x,y] arrays of coordinates
+    gemCenters: number[][] = [] //accepts ([row, col] format) arrays of coordinates 
+    gemEnds: number[][] = [] //accepts ([row, col] format) arrays of coordinates
     //gemCenters and gemEnds are modified every time a room or corridor is created. They will act as viable places for gems to spawn.
 
     //genetic traits:
     roomShape: string; //W - ellipse, E - square, F - long rect, A - triangle
     gemSpawnStyle: string;
     obstacleType: string;
-    wallDeco: number; //-1 - concave, 0 - flat, 1 - convex
-    connectionType:string;
-    enemyType:string;
-    floorStyle:string;
-    theme:string; //W,E,F,A
+    wallDeco: string;
+    connectionType: string;
+    enemyType: string;
+    floorStyle: string;
+    theme: string; //W,E,F,A
+    //store all of these as strings for continuity purposes; they will be evaluated in their respective functions.
 
     constructor(seed: number, gene: string/*length 8*/, width: number, height: number) {
         if (gene.length != 8) { throw ("Room:Constructor:Gene not length 8.") }
@@ -78,14 +79,8 @@ class Room {
         this.roomShape = gene[0]
         this.gemSpawnStyle = gene[1]
         this.obstacleType = gene[2]
-        this.wallDeco = gene[3] == "W" || gene[3] == "F" ? 0 : (gene[3] == "E" ? 1 : -1)
+        this.wallDeco = gene[3]
         this.connectionType = gene[4]
-        /*connection types:
-        W = no corridors, rooms touch, slightly overlapping.
-        E = Elbow corridors
-        F = Rectangle corridors
-        A = All corridors branch out from a center room.
-        */
         this.enemyType = gene[5]
         this.floorStyle = gene[6]
         this.theme = gene[7]
@@ -93,8 +88,7 @@ class Room {
         //second: initialize the empty state of the room.
         this.initMap()
         //third: fill the map its empty rooms, connections, and wall alterations.
-        this.basicShapes()
-        //space and connect these rooms based on gene[4] - connection type.
+        this.createSubrooms()
 
         console.log("Finished creating the room.")
         console.log(`${this}`) //forces pretty toString.
@@ -110,20 +104,125 @@ class Room {
         }
         //console.log(`${this}`)
     }
-    private basicShapes(){
+    private geneDetermine(input: string, waterOpt: any, earthOpt: any, fireOpt: any, airOpt: any) {
+        //geneDetermine is a simple helper function so i dont have to write a switch statement every time i wanna plug a gene in/output
+        switch (input) {
+            case "W":
+                return waterOpt;
+                break;
+            case "E":
+                return earthOpt;
+                break;
+            case "F":
+                return fireOpt;
+                break;
+            case "A":
+                return airOpt;
+                break;
+            default:
+                throw ("geneDetermine: input is not a single-letter WEFA.")
+                break;
+        }
+
+    }
+
+    private createSubrooms() {
+        //here, we create the outlines & fills of the rooms, and connect them with our corridors.
+        //this is a pretty hefty chunk of code.
         //Min of 4 subrooms, max of 10.
         let numSubrooms = Math.floor(this.r.getR(6)) + 4
         //decide the radius of each subroom based on the number, assuming grid size is hardcoded to 100x100.
         //this radius will be mutated by -1, 0, or 1 when the subroom is constructed in order to create variation.
-        let subroomRadius = Math.floor(16 * (0.9 ** (numSubrooms-4))) //max radius: 16, min radius: 5
+        let subroomRadius = Math.floor(10 * (0.9 ** (numSubrooms - 4))) //max radius: 10, min radius: 5
         //decide the distance between subrooms based on their size and the corridor connection type.
-        //smaller subrooms have medium connections, larger have short, and medium have long.
-        let distanceBetween;
-        //if () //YOU WERE HERE
+        /*connection types:
+        W = no corridors, rooms touch, slightly overlapping.
+        E = Elbow corridors
+        F = Rectangle corridors
+        A = single-tile corridors.
+        */
+        let distanceBetween = this.geneDetermine(this.connectionType, -1, subroomRadius / 4, subroomRadius / 2, 1)
+        //keycode reference:
+        /* 
+            . = empty
+            ! = the center of a room.
+            , = the filled floor of a room
+            _ = the filled floor of a hallway
+            ^ = obstacle
+
+        */
+        let potentialCenter:number[] = [Math.floor(this.r.getR(this.rows / 3) + this.rows / 3), Math.floor(this.r.getR(this.cols / 3) + this.cols / 3)] //i, j position in the center third of the map.
+        let currRadius = Math.floor(subroomRadius * (this.r.getR(0.4) + 0.8))
+        let nextRadius = Math.floor(subroomRadius * (this.r.getR(0.4) + 0.8))
+
+        switch (this.theme) { //the overall theme of the room will determine the generation method of the room.
+            /*Theme 1: water
+                pseudocode:
+                random starter subroom position, vaguely centered.
+                pick a direction, create a hallway in that direction depending on hall style.
+                create the next subroom
+                pick a direction. If there is already a "center" of the room in that direction, set choicepoint to that position and pick a new dir.
+                create the room there, rinse and repeat.
+                If a room would be centered such that it would go offscreen, don't pick a point there.
+                */
+            case "W":
+                for (let nRooms = 0; nRooms < numSubrooms; nRooms++) {
+                    //set centerpoint to be a ! & push to centerpoint array.  
+                    this.tiles[potentialCenter[0]][potentialCenter[1]] = "!"
+                    this.gemCenters.push(potentialCenter)
+                    //need code for: push to room edge array.
+
+                    //need code here to fill around the room with floor tiles
+                    //
+                    potentialCenter = this.nextRoomCenterWater(potentialCenter, distanceBetween, currRadius, nextRadius)
+                }
+
+        }
+
     }
+    private nextRoomCenterWater(currCenter: number[], distanceBetween: number, currRadius: number, nextRadius: number):number[] {
+        console.log("Inside nRCW, currcenter is: ", currCenter)
+        //creates the next center for the room, and connects two rooms via hallway if applicable.
+        //uses the Water style of determining room placement.
+        switch (this.connectionType) {
+            case "W":
+                //water-type hallways: overlap rooms by one.
+                let tries = 0;
+                let nu: number[] = []
+                while (tries < 20) {
+                    let dir = Math.floor(this.r.getR(4))
+                    switch (dir) {
+                        case 0: //up
+                        console.log("nrcw UP")
+                            nu = [currCenter[0] - currRadius + 1 - nextRadius, currCenter[1]]
+                            break
+                        case 1: //down
+                        console.log("nrcw DOWN")
+                            nu = [currCenter[0] + currRadius - 1 + nextRadius, currCenter[1]]
+                            break
+                        case 2: //left
+                        console.log("nrcw LEFT")
+                            nu = [currCenter[0], currCenter[1] - currRadius + 1 - nextRadius]
+                            break
+                        case 3: //right
+                        console.log("nrcw RIGHT")
+                            nu = [currCenter[0], currCenter[1] + currRadius - 1 + nextRadius]
+                            break
+                    }
+                    if (this.gemCenters.includes(nu)) { console.log("ncrw:prev made room"); currCenter = nu; continue; } //if we've found a previously created room, use it as the new center & retry.
+                    if (nu[0] <= nextRadius || nu[1] <= nextRadius || nu[0] >= this.rows - nextRadius || nu[1] >= this.cols - nextRadius) { console.log("ncrw: out of bounds radius"); continue } // will overlap boundaries, retry
+                    console.log("ncrw done: returning ", nu)
+                    return nu
+                }
+                throw("nextRoomCenterWater: Could not find valid position within allotted tries.")
+        }
+        return [-1, -1] //bad return, should never get here.
+    }
+
+
     // thank you stackoverflow for tostring override help
     //https://stackoverflow.com/questions/35361482/typescript-override-tostring
-    public toString = () : string => {
+    public toString = (): string => {
         let _str: string = ""
         _str += "Seed: " + this.seed + "\n";
         _str += "Gene: " + this.gene + "\n";
@@ -149,7 +248,7 @@ class SubRandom { //this class exists so I can control a room's RNG, isolated fr
         //console.log("SubRandom initialized seed as: ", this.seed)
     }
     getR(max: number = 1) {
-        console.log("inside getR, seed = ", this.seed)
+        //console.log("inside getR, seed = ", this.seed)
         let rand = SubRandom.sfc32(this.seed, this.seed << 5, this.seed >> 7, this.seed << 13)
         this.seed = (rand * 4294967296)
         //console.log(rand)
