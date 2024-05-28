@@ -96,23 +96,23 @@ function picker(code1, code2) {
     return nextCode
 }
 
-// class Play extends Phaser.Scene {
-//     constructor() {
-//         super('playScene')
-//     }
+class Play extends Phaser.Scene {
+    constructor() {
+        super('playScene')
+    }
 
-//     init() {
+    init() {
 
-//     }
+    }
 
-//     create() {
-//         console.log("scene started")
-//         code1 = "WFEAFAEW"
-//         code2 = "AWEFAEWE"
-//         console.log("Code 3:", geneticAlgorithm(code1, code2))
-//     }
+    create() {
+        console.log("scene started")
+        var code1 = "WFEAFAEW"
+        var code2 = "AWEFAEWE"
+        console.log("Code 3:", geneticAlgorithm(code1, code2, 10))
+    }
 
-//     update() {
-//         console.log("here")
-//     }
-// }
+    update() {
+        console.log("here")
+    }
+}
