@@ -15,7 +15,7 @@ export class Dungeon {
         this.seed = seed
         console.log("dungon: result of hash =", this.seed)
         //the initial room will be based on seed alone; the skews will all be zero.
-        this.currentRoom = new Room(this.seed, "AWWWFWWF", this.maxW, this.maxH);
+        this.currentRoom = new Room(this.seed, "AWWWAWWW", this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
     }
 }
@@ -71,7 +71,7 @@ class Room {
         //third: fill the map with its empty rooms, connections, and wall alterations.
         this.createSubrooms()
         this.createCorridors()
-        this.fillAllRooms()
+        //this.fillAllRooms()
 
         this.decoGemArrayDebug()
         console.log("Finished creating the room.")
@@ -134,10 +134,6 @@ class Room {
             ^ = obstacle/trap
 
         */
-        let potentialCenter: number[] = [-1, -1];
-        let currRadius = 0;
-        let nextRadius = 0;
-        let distanceBetween = this.geneDetermine(this.connectionType, -1, subroomRadius / 2, subroomRadius, 1)
 
         let genFunc = this.geneDetermine(this.theme, this.genRoomWater, this.genRoomEarth, this.genRoomFire, this.genRoomAir)
 
@@ -148,7 +144,7 @@ class Room {
         let potentialCenter: number[] = [-1, -1];
         let currRadius = 0;
         let nextRadius = 0;
-        let distanceBetween = context.geneDetermine(context.connectionType, -1, subroomRadius / 2, subroomRadius, 1)
+        let distanceBetween = context.geneDetermine(context.connectionType, -1, subroomRadius / 2, subroomRadius, subroomRadius)
         /*Theme 1: water
                pseudocode:
                random starter subroom position, vaguely centered.
@@ -192,8 +188,8 @@ class Room {
         let potentialCenter: number[] = [-1, -1];
         let currRadius = 0;
         let nextRadius = 0;
-        let distanceBetween = context.geneDetermine(context.connectionType, -1, subroomRadius / 2, subroomRadius, 1)
-        /* Theme 2: earth
+        let distanceBetween = context.geneDetermine(context.connectionType, -1, subroomRadius / 2, subroomRadius, subroomRadius)
+        /* Theme 2: fire *used to be earth
                 pseudocode:
                 first room is in one of the corners, chosen at random.
                 from there, tries to make rooms towards the center of the opposite quadrant. If it is able to reach that point, picks a new, unused quadrant, and looks towards that.
@@ -291,14 +287,13 @@ class Room {
         }
     }
     private genRoomEarth(numSubrooms: number, subroomRadius: number, context: any) {
-        console.log("in genroomfire!")
         let potentialCenter: number[] = [-1, -1];
         let currRadius = 0;
         let nextRadius = 0;
-        let distanceBetween = Math.floor(context.geneDetermine(context.connectionType, subroomRadius * 2 - 1, subroomRadius * 2.5, subroomRadius * 3, subroomRadius * 2 + 1))
-        console.log("distanceBetween: ", distanceBetween)
-        console.log("subroomRadius:", subroomRadius)
-        //style 3: fire
+        let distanceBetween = Math.floor(context.geneDetermine(context.connectionType, subroomRadius * 2 - 1, subroomRadius * 2.5, subroomRadius * 3, subroomRadius * 3))
+        //console.log("distanceBetween: ", distanceBetween)
+        //console.log("subroomRadius:", subroomRadius)
+        //style 3: earth *used to be fire
         //rooms are aligned in a grid. 
         //begin with the center of the grid.
         potentialCenter = [Math.floor(context.rows / 2), Math.floor(context.cols / 2)]
@@ -388,7 +383,7 @@ class Room {
         if (this.theme == "A") {
             //then we need to do a special-case spoke connection.
             this.createCorridorsAir()
-            return
+            return;
         }
         //for water, earth and fire themed rooms.
         switch (this.connectionType) {
@@ -466,8 +461,39 @@ class Room {
                 }
                 break;
             case "A":
+                console.log("making air corridors")
                 //draw a three-wide diagonal line from current center to next center.
-                
+                for (let curr = 0; curr < this.gemCenters.length - 1; curr++) {
+                    //looping through the current rooms and the next room in the array.
+                    // may cause some funny generation when rooms are not drawn adjacent to each other. but whatever.
+                    let next = curr + 1
+                    let currCenter = this.gemCenters[curr]
+                    let nextCenter = this.gemCenters[next]
+                    let top: number, bottom: number, left: number, right: number
+                    top = Math.min(this.gemCenters[curr][0], this.gemCenters[next][0])
+                    bottom = Math.max(this.gemCenters[curr][0], this.gemCenters[next][0])
+                    left = Math.min(this.gemCenters[curr][1], this.gemCenters[next][1])
+                    right = Math.max(this.gemCenters[curr][1], this.gemCenters[next][1])
+                    //math taken from https://stackoverflow.com/questions/910882/how-can-i-tell-if-a-point-is-nearby-a-certain-line
+                    for (let row = top; row <= bottom; row++) {
+                        for (let col = left; col <= right; col++) {
+                            //now the intensive calculations.
+                            let y0 = row,
+                            x0 = col,
+                            y1 = currCenter[0],
+                            x1 = currCenter[1],
+                            y2 = nextCenter[0],
+                            x2 = nextCenter[1]
+                            let numer = Math.abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1))
+                            let denom = Math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+                            //console.log(numer, denom, (numer/denom))
+                            if(numer/denom <= 1){
+                                this.tiles[row][col] = "_"
+                            }
+                        }
+                    }
+                    
+                }
                 break;
         }
     }
