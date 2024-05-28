@@ -15,7 +15,7 @@ export class Dungeon {
         this.seed = seed
         console.log("dungon: result of hash =", this.seed)
         //the initial room will be based on seed alone; the skews will all be zero.
-        this.currentRoom = new Room(this.seed, "AWWWWWWE", this.maxW, this.maxH);
+        this.currentRoom = new Room(this.seed, "AWWWFWWF", this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
     }
 }
@@ -31,7 +31,7 @@ class Room {
 
     gemCenters: number[][] = [] //accepts ([row, col] format) arrays of coordinates 
     gemEnds: number[][] = [] //accepts ([row, col] format) arrays of coordinates
-    savedRadii: number[]= [] //accepts integers
+    savedRadii: number[] = [] //accepts integers
     //gemCenters and gemEnds are modified every time a room or corridor is created. They will act as viable places for gems to spawn.
 
     //genetic traits:
@@ -67,9 +67,13 @@ class Room {
 
         //second: initialize the empty state of the room.
         this.initMap()
-        //third: fill the map its empty rooms, connections, and wall alterations.
-        this.createSubrooms()
 
+        //third: fill the map with its empty rooms, connections, and wall alterations.
+        this.createSubrooms()
+        this.createCorridors()
+        this.fillAllRooms()
+
+        this.decoGemArrayDebug()
         console.log("Finished creating the room.")
         console.log(`${this}`) //forces pretty toString.
     }
@@ -108,7 +112,6 @@ class Room {
 
     private createSubrooms() {
         //here, we create the outlines & fills of the rooms, and connect them with our corridors.
-        //this is a pretty hefty chunk of code.
         //Min of 4 subrooms, max of 10.
         let numSubrooms = Math.floor(this.r.getR(6)) + 4
         console.log("num subrooms: ", numSubrooms)
@@ -136,158 +139,344 @@ class Room {
         let nextRadius = 0;
         let distanceBetween = this.geneDetermine(this.connectionType, -1, subroomRadius / 2, subroomRadius, 1)
 
-        switch (this.theme) { //the overall theme of the room will determine the generation method of the room.
-            case "W":
-                /*Theme 1: water
-                pseudocode:
-                random starter subroom position, vaguely centered.
-                create the next subroom at a random point based on hallway maths.
-                create the room there, rinse and repeat. allow for overlapping rooms
-                If a room would be centered such that it would go offscreen, don't pick a point there.
-                */
-                for (let nRooms = 0; nRooms <= numSubrooms; nRooms++) {
-                    if (nRooms == 0) {//first pass
-                        potentialCenter = [Math.floor(this.r.getR(this.rows / 3) + this.rows / 3), Math.floor(this.r.getR(this.cols / 3) + this.cols / 3)] //i, j position in the center third of the map.
-                        currRadius = Math.floor(subroomRadius * (this.r.getR(0.4) + 0.8))
-                        nextRadius = Math.floor(subroomRadius * (this.r.getR(0.4) + 0.8))
-                    } else {
-                        //must create a room at a random, legal point
-                        let tries = 0;
-                        let placeholder: number[] = []
-                        while (tries < 20) {
-                            //pick an angle and travel 
-                            let theta = this.r.getR(365)
-                            let hypotenuse = currRadius + nextRadius + distanceBetween
-                            //time to get on that sine cosine shit
-                            let deltaY = hypotenuse * Math.cos(theta)
-                            let deltaX = hypotenuse * Math.sin(theta)
-                            placeholder = [Math.floor(deltaY + potentialCenter[0]), Math.floor(deltaX + potentialCenter[1])]
-                            tries++
-                            if (tries >= 20) { throw ("water-roomgen: Could not find valid position within allotted tries.") }
-                            if (this.gemCenters.includes(placeholder)) { console.log("water-roomgen:prev made room"); continue; } //if we're directly centered on a previously created room, retry.
-                            if (placeholder[0] <= nextRadius || placeholder[1] <= nextRadius || placeholder[0] >= this.rows - 1 - nextRadius || placeholder[1] >= this.cols - 1 - nextRadius) { console.log("water-roomgen: out of bounds radius"); continue } // will overlap boundaries, retry
-                            break;
-                        }
-                        potentialCenter = placeholder
-                        currRadius = nextRadius
-                        nextRadius = Math.floor(subroomRadius * (this.r.getR(0.4) + 0.8))
-                    }
-                    //set centerpoint to be a ! & push to gem center/edge array.  
-                    this.tiles[potentialCenter[0]][potentialCenter[1]] = "!"
-                    this.pushRoomGemArray(potentialCenter, currRadius)
+        let genFunc = this.geneDetermine(this.theme, this.genRoomWater, this.genRoomEarth, this.genRoomFire, this.genRoomAir)
+
+        genFunc(numSubrooms, subroomRadius, this)
+
+    }
+    private genRoomWater(numSubrooms: number, subroomRadius: number, context: any) {
+        let potentialCenter: number[] = [-1, -1];
+        let currRadius = 0;
+        let nextRadius = 0;
+        let distanceBetween = context.geneDetermine(context.connectionType, -1, subroomRadius / 2, subroomRadius, 1)
+        /*Theme 1: water
+               pseudocode:
+               random starter subroom position, vaguely centered.
+               create the next subroom at a random point based on hallway maths.
+               create the room there, rinse and repeat. allow for overlapping rooms
+               If a room would be centered such that it would go offscreen, don't pick a point there.
+               */
+        for (let nRooms = 0; nRooms <= numSubrooms; nRooms++) {
+            if (nRooms == 0) {//first pass
+                potentialCenter = [Math.floor(context.r.getR(context.rows / 3) + context.rows / 3), Math.floor(context.r.getR(context.cols / 3) + context.cols / 3)] //i, j position in the center third of the map.
+                currRadius = Math.floor(subroomRadius * (context.r.getR(0.4) + 0.8))
+                nextRadius = Math.floor(subroomRadius * (context.r.getR(0.4) + 0.8))
+            } else {
+                //must create a room at a random, legal point
+                let tries = 0;
+                let placeholder: number[] = []
+                while (tries < 20) {
+                    //pick an angle and travel 
+                    let theta = context.r.getR(365)
+                    let hypotenuse = currRadius + nextRadius + distanceBetween
+                    //time to get on that sine cosine shit
+                    let deltaY = hypotenuse * Math.cos(theta)
+                    let deltaX = hypotenuse * Math.sin(theta)
+                    placeholder = [Math.floor(deltaY + potentialCenter[0]), Math.floor(deltaX + potentialCenter[1])]
+                    tries++
+                    if (tries >= 20) { throw ("water-roomgen: Could not find valid position within allotted tries.") }
+                    if (context.gemCenters.includes(placeholder)) { console.log("water-roomgen:prev made room"); continue; } //if we're directly centered on a previously created room, retry.
+                    if (placeholder[0] <= nextRadius || placeholder[1] <= nextRadius || placeholder[0] >= context.rows - 1 - nextRadius || placeholder[1] >= context.cols - 1 - nextRadius) { console.log("water-roomgen: out of bounds radius"); continue } // will overlap boundaries, retry
+                    break;
                 }
-                break;
-            case "E":
-                /* Theme 2: earth
+                potentialCenter = placeholder
+                currRadius = nextRadius
+                nextRadius = Math.floor(subroomRadius * (context.r.getR(0.4) + 0.8))
+            }
+            //set centerpoint to be a ! & push to gem center/edge array.  
+            context.tiles[potentialCenter[0]][potentialCenter[1]] = "!"
+            context.pushRoomGemArray(potentialCenter, currRadius)
+        }
+    }
+    private genRoomFire(numSubrooms: number, subroomRadius: number, context: any) {
+        let potentialCenter: number[] = [-1, -1];
+        let currRadius = 0;
+        let nextRadius = 0;
+        let distanceBetween = context.geneDetermine(context.connectionType, -1, subroomRadius / 2, subroomRadius, 1)
+        /* Theme 2: earth
                 pseudocode:
                 first room is in one of the corners, chosen at random.
                 from there, tries to make rooms towards the center of the opposite quadrant. If it is able to reach that point, picks a new, unused quadrant, and looks towards that.
                 */
-                let ogQ = Math.floor(this.r.getR(4))
-                let ogC = (ogQ + 2) % 4
+        let ogQ = Math.floor(context.r.getR(4))
+        let ogC = (ogQ + 2) % 4
 
-                let target: number[] = [0, 0];
-                switch (ogQ) {
+        let target: number[] = [0, 0];
+        switch (ogQ) {
+            case 0:
+                potentialCenter = [0 + subroomRadius * 2, context.cols - subroomRadius * 2]
+                target = [context.cols - subroomRadius * 2, 0 + subroomRadius * 2]
+                break;
+            case 1:
+                potentialCenter = [0 + subroomRadius * 2, 0 + subroomRadius * 2]
+                target = [context.cols - subroomRadius * 2, context.cols - subroomRadius * 2]
+                break;
+            case 2:
+                potentialCenter = [context.cols - subroomRadius * 2, 0 + subroomRadius * 2]
+                target = [0 + subroomRadius * 2, context.cols - subroomRadius * 2]
+                break;
+            case 3:
+                potentialCenter = [context.cols - subroomRadius * 2, context.cols - subroomRadius * 2]
+                target = [0 + subroomRadius * 2, 0 + subroomRadius * 2]
+                break;
+        }
+        //now, mutate center & target slightly to increase variation.
+        potentialCenter[0] *= context.r.getR(0.1) + 0.95
+        potentialCenter[1] *= context.r.getR(0.1) + 0.95
+        target[0] *= context.r.getR(0.1) + 0.95
+        target[1] *= context.r.getR(0.1) + 0.95
+        let dy = target[0] - potentialCenter[0],
+            dx = target[1] - potentialCenter[1]
+        //console.log("initial center:", potentialCenter, " initial target:", target)
+        //set firstpass of radii
+        currRadius = Math.floor(subroomRadius * (context.r.getR(0.4) + 0.8))
+        nextRadius = Math.floor(subroomRadius * (context.r.getR(0.4) + 0.8))
+
+        //loop thru rooms
+        for (let nRooms = 0; nRooms <= numSubrooms;) {
+            //set centerpoint to be a ! & push to gem center/edge array.  
+            //we have already creatd the first place, at the original potential center.
+            //console.log("attempting to place room center @ ", potentialCenter)
+            potentialCenter = [Math.floor(potentialCenter[0]), Math.floor(potentialCenter[1])]
+            context.tiles[potentialCenter[0]][potentialCenter[1]] = nRooms.toString()
+            context.pushRoomGemArray(potentialCenter, currRadius)
+
+            //now, find a new potential center.
+            //console.log("current dist from target: ", Math.sqrt(dy * dy + dx * dx))
+            if (Math.sqrt(dy * dy + dx * dx) >= currRadius + nextRadius + distanceBetween) { //we have not yet reached our destination.
+                let theta = Math.atan2(dy, dx)
+                //mutate theta just a little bit
+                theta *= context.r.getR(0.1) + 0.95
+                let hypotenuse = currRadius + nextRadius + distanceBetween
+                let dy2, dx2;
+                dy2 = hypotenuse * Math.sin(theta)
+                dx2 = hypotenuse * Math.cos(theta)
+                //console.log("theta: ", theta * (180 / 3.14))
+                //console.log("dy2:", dy2, "dx2:", dx2)
+                let temp = [Math.floor(potentialCenter[0] + dy2), Math.floor(potentialCenter[1] + dx2)]
+                potentialCenter = temp
+                currRadius = nextRadius
+                nextRadius = Math.floor(subroomRadius * (context.r.getR(0.4) + 0.8))
+
+                //update dx and dy to reflect most recent center
+                dy = target[0] - potentialCenter[0]
+                dx = target[1] - potentialCenter[1]
+                nRooms++ //only want to inc rooms if we've placed one.
+            } else { //need to tg a new quadrant
+                //console.log("earth-room: picking a new quadrant as target.")
+                let newQ = ogQ;
+                while (newQ == ogQ || newQ == ogC) {
+                    newQ = Math.floor(context.r.getR(4))
+                }
+                switch (newQ) {
                     case 0:
-                        potentialCenter = [0 + subroomRadius * 2, this.cols - subroomRadius * 2]
-                        target = [this.cols - subroomRadius * 2, 0 + subroomRadius * 2]
+                        target = [context.cols - subroomRadius * 2, 0 + subroomRadius * 2]
                         break;
                     case 1:
-                        potentialCenter = [0 + subroomRadius * 2, 0 + subroomRadius * 2]
-                        target = [this.cols - subroomRadius * 2, this.cols - subroomRadius * 2]
+                        target = [context.cols - subroomRadius * 2, context.cols - subroomRadius * 2]
                         break;
                     case 2:
-                        potentialCenter = [this.cols - subroomRadius * 2, 0 + subroomRadius * 2]
-                        target = [0 + subroomRadius * 2, this.cols - subroomRadius * 2]
+                        target = [0 + subroomRadius * 2, context.cols - subroomRadius * 2]
                         break;
                     case 3:
-                        potentialCenter = [this.cols - subroomRadius * 2, this.cols - subroomRadius * 2]
                         target = [0 + subroomRadius * 2, 0 + subroomRadius * 2]
                         break;
                 }
-                //now, mutate center & target slightly to increase variation.
-                potentialCenter[0] *= this.r.getR(0.1) + 0.95
-                potentialCenter[1] *= this.r.getR(0.1) + 0.95
-                target[0] *= this.r.getR(0.1) + 0.95
-                target[1] *= this.r.getR(0.1) + 0.95
-                let dy = target[0] - potentialCenter[0],
-                    dx = target[1] - potentialCenter[1]
-                //console.log("initial center:", potentialCenter, " initial target:", target)
-                //set firstpass of radii
-                currRadius = Math.floor(subroomRadius * (this.r.getR(0.4) + 0.8))
-                nextRadius = Math.floor(subroomRadius * (this.r.getR(0.4) + 0.8))
-                
-                //loop thru rooms
-                for (let nRooms = 0; nRooms <= numSubrooms;) {
-                     //set centerpoint to be a ! & push to gem center/edge array.  
-                     //we have already creatd the first place, at the original potential center.
-                     //console.log("attempting to place room center @ ", potentialCenter)
-                     potentialCenter = [Math.floor(potentialCenter[0]), Math.floor(potentialCenter[1])]
-                     this.tiles[potentialCenter[0]][potentialCenter[1]] = nRooms.toString()
-                     this.pushRoomGemArray(potentialCenter, currRadius)
+                //console.log("new target is: ", target)
+                dy = target[0] - potentialCenter[0]
+                dx = target[1] - potentialCenter[1]
+                //nRooms++
+            }
 
-                    //now, find a new potential center.
-                    //console.log("current dist from target: ", Math.sqrt(dy * dy + dx * dx))
-                    if (Math.sqrt(dy * dy + dx * dx) >= currRadius + nextRadius + distanceBetween) { //we have not yet reached our destination.
-                        let theta = Math.atan2(dy, dx)
-                        //mutate theta just a little bit
-                        theta *= this.r.getR(0.1) + 0.95
-                        let hypotenuse = currRadius + nextRadius + distanceBetween
-                        let dy2, dx2;
-                        dy2 = hypotenuse * Math.sin(theta)
-                        dx2 = hypotenuse * Math.cos(theta)
-                        //console.log("theta: ", theta * (180 / 3.14))
-                        //console.log("dy2:", dy2, "dx2:", dx2)
-                        let temp = [Math.floor(potentialCenter[0] + dy2), Math.floor(potentialCenter[1] + dx2)]
-                        potentialCenter = temp
-                        currRadius = nextRadius
-                        nextRadius = Math.floor(subroomRadius * (this.r.getR(0.4) + 0.8))
+        }
+    }
+    private genRoomEarth(numSubrooms: number, subroomRadius: number, context: any) {
+        console.log("in genroomfire!")
+        let potentialCenter: number[] = [-1, -1];
+        let currRadius = 0;
+        let nextRadius = 0;
+        let distanceBetween = Math.floor(context.geneDetermine(context.connectionType, subroomRadius * 2 - 1, subroomRadius * 2.5, subroomRadius * 3, subroomRadius * 2 + 1))
+        console.log("distanceBetween: ", distanceBetween)
+        console.log("subroomRadius:", subroomRadius)
+        //style 3: fire
+        //rooms are aligned in a grid. 
+        //begin with the center of the grid.
+        potentialCenter = [Math.floor(context.rows / 2), Math.floor(context.cols / 2)]
+        context.tiles[potentialCenter[0]][potentialCenter[1]] = "?"
+        console.log("og room @:", potentialCenter)
+        context.pushRoomGemArray(potentialCenter, subroomRadius)
+        //now, for the remaining rooms, step in a random cardinal direction that does not already have a room there.
+        //the distance stepped should be constant every time, and it should check that there is not already a room there.
+        //if there Is a room there, it will keep stepping in the same direction until there is not a room or it is out of bounds.
+        //for ease of coding, fire-rooms will not have variation in subroom radius.
 
-                        //update dx and dy to reflect most recent center
-                        dy = target[0] - potentialCenter[0]
-                        dx = target[1] - potentialCenter[1]
-                        nRooms++ //only want to inc rooms if we've placed one.
-                    } else { //need to tg a new quadrant
-                        //console.log("earth-room: picking a new quadrant as target.")
-                        let newQ = ogQ;
-                        while (newQ == ogQ || newQ == ogC) {
-                            newQ = Math.floor(this.r.getR(4))
+        //main loop. starts @ 1 bc we've already placed center.
+        for (let nRooms = 1; nRooms < numSubrooms; nRooms++) {
+            let tryCenter: number[] = [potentialCenter[0], potentialCenter[1]] //don't want to override potentialcenter until we know it's good.
+            let tries = 0
+            let dir = Math.floor(context.r.getR(4))
+            //inner loop
+            while (tries < 20) {
+                //first, step.
+                switch (dir) {
+                    case 0: //up
+                        tryCenter[0] -= distanceBetween
+                        console.log("stepping up")
+                        break;
+                    case 1: //down
+                        tryCenter[0] += distanceBetween
+                        console.log("stepping down")
+
+                        break;
+                    case 2: //right
+                        tryCenter[1] += distanceBetween
+                        console.log("stepping right")
+
+                        break;
+                    case 3: //left
+                        tryCenter[1] -= distanceBetween
+                        console.log("stepping ;eft")
+
+                        break;
+                }
+                //now, check.
+                //out of bounds?
+                if (tryCenter[0] < 0 + subroomRadius || tryCenter[0] > context.rows - subroomRadius || tryCenter[1] < 0 + subroomRadius || tryCenter[1] > context.cols - subroomRadius) {
+                    //restart and randomize again.
+                    tryCenter = [potentialCenter[0], potentialCenter[1]]
+                    dir = Math.floor(context.r.getR(4))
+                    tries++
+                    console.log("out of bounds")
+
+                }
+                else if (context.tiles[tryCenter[0]][tryCenter[1]] == "?") {//then we want to keep stepping in the same direction.
+                    console.log(tryCenter)
+                    //do not randomize dir
+                    console.log("already room here")
+                    tries++
+
+                } else {
+                    //good.
+                    potentialCenter = [tryCenter[0], tryCenter[1]]
+                    context.tiles[potentialCenter[0]][potentialCenter[1]] = "?"
+                    console.log("good room, placing at: ", potentialCenter)
+
+                    context.pushRoomGemArray(potentialCenter, subroomRadius)
+                    break;
+                }
+
+            }//inner loop end
+            console.log("i should appear directly after good room")
+            if (tries >= 20) {
+                throw ("genRoomFire: stepCard: Could not find good room in allotted tries.")
+            }
+        }
+
+
+    }
+    private genRoomAir(numSubrooms: number, subroomRadius: number, context: any) {
+        let potentialCenter: number[] = [-1, -1];
+        let currRadius = 0;
+        let nextRadius = 0;
+        let distanceBetween = context.geneDetermine(context.connectionType, -1, subroomRadius / 2, subroomRadius, 1)
+    }
+    private createCorridors() {
+        if (this.connectionType == "W") {
+            //no work then! tee hee
+            return;
+        }
+        if (this.theme == "A") {
+            //then we need to do a special-case spoke connection.
+            this.createCorridorsAir()
+            return
+        }
+        //for water, earth and fire themed rooms.
+        switch (this.connectionType) {
+            case "E":
+                //earth corridors:
+                //create squares between the centerpoints of each subroom.
+                for (let curr = 0; curr < this.gemCenters.length - 1; curr++) {
+                    //looping through the current rooms and the next room in the array.
+                    // may cause some funny generation when rooms are not drawn adjacent to each other. but whatever.
+                    let next = curr + 1
+                    let top: number, bottom: number, left: number, right: number
+                    top = Math.min(this.gemCenters[curr][0], this.gemCenters[next][0])
+                    bottom = Math.max(this.gemCenters[curr][0], this.gemCenters[next][0])
+                    left = Math.min(this.gemCenters[curr][1], this.gemCenters[next][1])
+                    right = Math.max(this.gemCenters[curr][1], this.gemCenters[next][1])
+                    for (let row = top; row <= bottom; row++) {
+                        for (let col = left; col <= right; col++) {
+                            this.tiles[row][col] = "_"
                         }
-                        switch (newQ) {
-                            case 0:
-                                target = [this.cols - subroomRadius * 2, 0 + subroomRadius * 2]
-                                break;
-                            case 1:
-                                target = [this.cols - subroomRadius * 2, this.cols - subroomRadius * 2]
-                                break;
-                            case 2:
-                                target = [0 + subroomRadius * 2, this.cols - subroomRadius * 2]
-                                break;
-                            case 3:
-                                target = [0 + subroomRadius * 2, 0 + subroomRadius * 2]
-                                break;
-                        }
-                        //console.log("new target is: ", target)
-                        dy = target[0] - potentialCenter[0]
-                        dx = target[1] - potentialCenter[1]
-                        //nRooms++
                     }
 
                 }
                 break;
+            case "F":
+                //fire corridors: L-shape from curr to next.
+                for (let curr = 0; curr < this.gemCenters.length - 1; curr++) {
+                    //looping through the current rooms and the next room in the array.
+                    // may cause some funny generation when rooms are not drawn adjacent to each other. but whatever.
+                    let next = curr + 1
+                    let currCenter = this.gemCenters[curr]
+                    let nextCenter = this.gemCenters[next]
 
+                    let top: number, bottom: number, left: number, right: number
+                    top = Math.min(this.gemCenters[curr][0], this.gemCenters[next][0])
+                    bottom = Math.max(this.gemCenters[curr][0], this.gemCenters[next][0])
+                    left = Math.min(this.gemCenters[curr][1], this.gemCenters[next][1])
+                    right = Math.max(this.gemCenters[curr][1], this.gemCenters[next][1])
+                    let vert: number, horiz: number
+                    //decide which flavor of "L" to draw:
+                    //left-down
+                    //right-down
+                    //left-up
+                    //right-up
+
+                    //truth table:
+                    //current above and to the left OR below and to the right
+                    //  = LD or RU
+                    //current above and to the right OR below and to the left
+                    //  = LU or RD
+                    // a = current above
+                    // b = current to the left
+                    let a: boolean, b: boolean
+                    a = currCenter[0] <= nextCenter[0]
+                    b = currCenter[1] <= nextCenter[1]
+                    if ((a && b) || (!a && !b)) {
+                        //LD or RU code here
+                        let choose = Math.floor(this.r.getR(2))
+                        vert = choose == 0 ? bottom : top
+                        horiz = choose == 0 ? left : right
+                    } else {
+                        //LU or RD here
+                        let choose = Math.floor(this.r.getR(2))
+                        vert = choose == 0 ? top : bottom
+                        horiz = choose == 0 ? left : right
+                    }
+                    for (let row = top; row <= bottom; row++) {
+                        this.tiles[row][horiz] = "_"
+                    }
+                    for (let col = left; col <= right; col++) {
+
+                        this.tiles[vert][col] = "_"
+                    }
+
+
+                }
+                break;
+            case "A":
+                //draw a three-wide diagonal line from current center to next center.
+                
+                break;
         }
-        this.fillAllRooms()
-        this.decoGemArrayDebug()
-
-
     }
-    private createCorridors() {
+    private createCorridorsAir() {
 
     }
     private fillAllRooms() {
         let fillFunc = this.geneDetermine(this.roomShape, this.fillRoomCircle, this.fillRoomRectangle, this.fillRoomDiamond, this.fillRoomTriangle)
-        console.log(this.roomShape)
+        //console.log(this.roomShape)
         let i = 0
         this.gemCenters.forEach(element => {
             fillFunc(element, this.savedRadii[i], this)
@@ -331,7 +520,7 @@ class Room {
         });
     }
 
-    private fillRoomCircle(currCenter: number[], currRadius: number, context:Room) {
+    private fillRoomCircle(currCenter: number[], currRadius: number, context: Room) {
         //valid center has already been ensured by center creator func
         //fill radius of map around point with floor tiles, circle style.
         //uses modified code from https://www.redblobgames.com/grids/circle-drawing/
@@ -355,7 +544,7 @@ class Room {
 
 
     }
-    private fillRoomRectangle(currCenter: number[], currRadius:number, context:Room) {
+    private fillRoomRectangle(currCenter: number[], currRadius: number, context: Room) {
         console.log("in fillRoomRect")
         //valid center has already been ensured by center creator func
         //fill radius of map around point with floor tiles, rect style.
@@ -374,7 +563,7 @@ class Room {
         }
 
     }
-    private fillRoomDiamond(currCenter: number[], currRadius: number, context:Room) {
+    private fillRoomDiamond(currCenter: number[], currRadius: number, context: Room) {
         //valid center has already been ensured by center creator func
         //fill radius of map around point with floor tiles, diamond style.
         let top = currCenter[0] - currRadius,
@@ -388,7 +577,7 @@ class Room {
         }
 
     }
-    private fillRoomTriangle(currCenter: number[], currRadius: number, context:Room) {
+    private fillRoomTriangle(currCenter: number[], currRadius: number, context: Room) {
         //valid center has already been ensured by center creator func
         //fill radius of map around point with floor tiles, triangle style.
         //console.log("in fillTriangle: centerpoint is:", currCenter)
