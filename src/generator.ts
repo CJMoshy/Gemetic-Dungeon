@@ -15,7 +15,7 @@ export class Dungeon {
         this.seed = seed
         console.log("dungon: result of hash =", this.seed)
         //the initial room will be based on seed alone; the skews will all be zero.
-        this.currentRoom = new Room(this.seed, "WWWWAWWA", this.maxW, this.maxH);
+        this.currentRoom = new Room(this.seed, "WWWWFWWA", this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
     }
 }
@@ -71,7 +71,7 @@ class Room {
         //third: fill the map with its empty rooms, connections, and wall alterations.
         this.createSubrooms()
         this.createCorridors()
-        //this.fillAllRooms()
+        this.fillAllRooms()
 
         this.decoGemArrayDebug()
         console.log("Finished creating the room.")
