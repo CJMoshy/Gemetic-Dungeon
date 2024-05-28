@@ -15,7 +15,7 @@ export class Dungeon {
         this.seed = seed
         console.log("dungon: result of hash =", this.seed)
         //the initial room will be based on seed alone; the skews will all be zero.
-        this.currentRoom = new Room(this.seed, "AWWWAWWW", this.maxW, this.maxH);
+        this.currentRoom = new Room(this.seed, "WWWWAWWA", this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
     }
 }
@@ -370,10 +370,34 @@ class Room {
 
     }
     private genRoomAir(numSubrooms: number, subroomRadius: number, context: any) {
-        let potentialCenter: number[] = [-1, -1];
+        let originalCenter: number[] = [Math.floor(context.rows / 2), Math.floor(context.cols / 2)];
+        //the original potential center is going to be the center, always.
         let currRadius = 0;
         let nextRadius = 0;
-        let distanceBetween = context.geneDetermine(context.connectionType, -1, subroomRadius / 2, subroomRadius, 1)
+        let distanceBetween = context.geneDetermine(context.connectionType, -1, subroomRadius * 1.5, subroomRadius * 1.5, subroomRadius * 1.5)
+        let thetaInc = 2 * 3.14 / (numSubrooms - 1)
+        console.log("thetaInc:", thetaInc)
+        let theta = context.r.getR(2 * 3.14) //randomized starting theta.
+        console.log("starting theta:", theta)
+        for (let nRooms = 0; nRooms < numSubrooms; nRooms++) {
+            if (nRooms == 0) { //first pass
+                currRadius = Math.floor(subroomRadius * (context.r.getR(0.4) + 0.8))
+                nextRadius = Math.floor(subroomRadius * (context.r.getR(0.4) + 0.8))
+                context.pushRoomGemArray(originalCenter, currRadius)
+            } else {
+                let hypotenuse = currRadius + nextRadius + distanceBetween
+                let dx = hypotenuse * Math.sin(theta)
+                let dy = hypotenuse * Math.cos(theta)
+                let py = Math.floor(originalCenter[0] - dy)
+                let px = Math.floor(originalCenter[1] - dx)
+                context.pushRoomGemArray([py, px], nextRadius)
+                // console.log("potential center @:", py, px)
+                // context.tiles[py][px] = "+"
+
+                nextRadius = Math.floor(subroomRadius * (context.r.getR(0.4) + 0.8)) //only need to change nextradius, center shape stays the same.
+                theta += thetaInc
+            }
+        }
     }
     private createCorridors() {
         if (this.connectionType == "W") {
@@ -479,26 +503,138 @@ class Room {
                         for (let col = left; col <= right; col++) {
                             //now the intensive calculations.
                             let y0 = row,
-                            x0 = col,
-                            y1 = currCenter[0],
-                            x1 = currCenter[1],
-                            y2 = nextCenter[0],
-                            x2 = nextCenter[1]
+                                x0 = col,
+                                y1 = currCenter[0],
+                                x1 = currCenter[1],
+                                y2 = nextCenter[0],
+                                x2 = nextCenter[1]
                             let numer = Math.abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1))
-                            let denom = Math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+                            let denom = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
                             //console.log(numer, denom, (numer/denom))
-                            if(numer/denom <= 1){
+                            if (numer / denom <= 1) {
                                 this.tiles[row][col] = "_"
                             }
                         }
                     }
-                    
+
                 }
                 break;
         }
     }
     private createCorridorsAir() {
+        //these are the same functions as above, but instead of looping thru all rooms, they create a "spoke" type path from the center room to each other room.
+        //for water, earth and fire themed rooms.
+        switch (this.connectionType) {
+            case "E":
+                //earth corridors:
+                //create squares between the centerpoints of each subroom.
 
+                for (let curr = 0; curr < this.gemCenters.length - 1; curr++) {
+                    //looping through the current rooms and the next room in the array.
+                    // may cause some funny generation when rooms are not drawn adjacent to each other. but whatever.
+                    let next = curr + 1
+                    let top: number, bottom: number, left: number, right: number
+                    top = Math.min(this.gemCenters[0][0], this.gemCenters[next][0])
+                    bottom = Math.max(this.gemCenters[0][0], this.gemCenters[next][0])
+                    left = Math.min(this.gemCenters[0][1], this.gemCenters[next][1])
+                    right = Math.max(this.gemCenters[0][1], this.gemCenters[next][1])
+                    for (let row = top; row <= bottom; row++) {
+                        for (let col = left; col <= right; col++) {
+                            this.tiles[row][col] = "_"
+                        }
+                    }
+
+                }
+                break;
+            case "F":
+                //fire corridors: L-shape from curr to next.
+                for (let curr = 0; curr < this.gemCenters.length - 1; curr++) {
+                    //looping through the current rooms and the next room in the array.
+                    // may cause some funny generation when rooms are not drawn adjacent to each other. but whatever.
+                    let next = curr + 1
+                    let currCenter = this.gemCenters[0]
+                    let nextCenter = this.gemCenters[next]
+
+                    let top: number, bottom: number, left: number, right: number
+                    top = Math.min(this.gemCenters[0][0], this.gemCenters[next][0])
+                    bottom = Math.max(this.gemCenters[0][0], this.gemCenters[next][0])
+                    left = Math.min(this.gemCenters[0][1], this.gemCenters[next][1])
+                    right = Math.max(this.gemCenters[0][1], this.gemCenters[next][1])
+                    let vert: number, horiz: number
+                    //decide which flavor of "L" to draw:
+                    //left-down
+                    //right-down
+                    //left-up
+                    //right-up
+
+                    //truth table:
+                    //current above and to the left OR below and to the right
+                    //  = LD or RU
+                    //current above and to the right OR below and to the left
+                    //  = LU or RD
+                    // a = current above
+                    // b = current to the left
+                    let a: boolean, b: boolean
+                    a = currCenter[0] <= nextCenter[0]
+                    b = currCenter[1] <= nextCenter[1]
+                    if ((a && b) || (!a && !b)) {
+                        //LD or RU code here
+                        let choose = Math.floor(this.r.getR(2))
+                        vert = choose == 0 ? bottom : top
+                        horiz = choose == 0 ? left : right
+                    } else {
+                        //LU or RD here
+                        let choose = Math.floor(this.r.getR(2))
+                        vert = choose == 0 ? top : bottom
+                        horiz = choose == 0 ? left : right
+                    }
+                    for (let row = top; row <= bottom; row++) {
+                        this.tiles[row][horiz] = "_"
+                    }
+                    for (let col = left; col <= right; col++) {
+
+                        this.tiles[vert][col] = "_"
+                    }
+
+
+                }
+                break;
+            case "A":
+                console.log("making air corridors")
+                //draw a three-wide diagonal line from current center to next center.
+                for (let curr = 0; curr < this.gemCenters.length - 1; curr++) {
+                    //looping through the current rooms and the next room in the array.
+                    // may cause some funny generation when rooms are not drawn adjacent to each other. but whatever.
+                    let next = curr + 1
+                    let currCenter = this.gemCenters[0]
+                    let nextCenter = this.gemCenters[next]
+                    let top: number, bottom: number, left: number, right: number
+                    top = Math.min(this.gemCenters[0][0], this.gemCenters[next][0])
+                    bottom = Math.max(this.gemCenters[0][0], this.gemCenters[next][0])
+                    left = Math.min(this.gemCenters[0][1], this.gemCenters[next][1])
+                    right = Math.max(this.gemCenters[0][1], this.gemCenters[next][1])
+                    //math taken from https://stackoverflow.com/questions/910882/how-can-i-tell-if-a-point-is-nearby-a-certain-line
+                    for (let row = top; row <= bottom; row++) {
+                        for (let col = left; col <= right; col++) {
+                            //now the intensive calculations.
+                            let y0 = row,
+                                x0 = col,
+                                y1 = currCenter[0],
+                                x1 = currCenter[1],
+                                y2 = nextCenter[0],
+                                x2 = nextCenter[1]
+                            let numer = Math.abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1))
+                            let denom = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+                            //console.log(numer, denom, (numer/denom))
+                            if (numer / denom <= 1) {
+                                this.tiles[row][col] = "_"
+                            }
+                        }
+                    }
+
+                }
+                break;
+        }
     }
     private fillAllRooms() {
         let fillFunc = this.geneDetermine(this.roomShape, this.fillRoomCircle, this.fillRoomRectangle, this.fillRoomDiamond, this.fillRoomTriangle)
