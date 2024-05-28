@@ -15,7 +15,8 @@ export class Dungeon {
         this.seed = seed
         console.log("dungon: result of hash =", this.seed)
         //the initial room will be based on seed alone; the skews will all be zero.
-        this.currentRoom = new Room(this.seed, "WWWWFWWA", this.maxW, this.maxH);
+        let tempGene = tempGeneMaker(this.seed)
+        this.currentRoom = new Room(this.seed, tempGene, this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
     }
 }
@@ -72,6 +73,10 @@ class Room {
         this.createSubrooms()
         this.createCorridors()
         this.fillAllRooms()
+
+        //fill the room with gems
+
+        //fill the room with traps
 
         this.decoGemArrayDebug()
         console.log("Finished creating the room.")
@@ -298,7 +303,7 @@ class Room {
         //begin with the center of the grid.
         potentialCenter = [Math.floor(context.rows / 2), Math.floor(context.cols / 2)]
         context.tiles[potentialCenter[0]][potentialCenter[1]] = "?"
-        console.log("og room @:", potentialCenter)
+        //console.log("og room @:", potentialCenter)
         context.pushRoomGemArray(potentialCenter, subroomRadius)
         //now, for the remaining rooms, step in a random cardinal direction that does not already have a room there.
         //the distance stepped should be constant every time, and it should check that there is not already a room there.
@@ -316,22 +321,19 @@ class Room {
                 switch (dir) {
                     case 0: //up
                         tryCenter[0] -= distanceBetween
-                        console.log("stepping up")
+                        //console.log("stepping up")
                         break;
                     case 1: //down
                         tryCenter[0] += distanceBetween
-                        console.log("stepping down")
-
+                        //console.log("stepping down")
                         break;
                     case 2: //right
                         tryCenter[1] += distanceBetween
-                        console.log("stepping right")
-
+                        //console.log("stepping right")
                         break;
                     case 3: //left
                         tryCenter[1] -= distanceBetween
-                        console.log("stepping ;eft")
-
+                        //console.log("stepping ;eft")
                         break;
                 }
                 //now, check.
@@ -341,27 +343,27 @@ class Room {
                     tryCenter = [potentialCenter[0], potentialCenter[1]]
                     dir = Math.floor(context.r.getR(4))
                     tries++
-                    console.log("out of bounds")
+                    //console.log("out of bounds")
 
                 }
                 else if (context.tiles[tryCenter[0]][tryCenter[1]] == "?") {//then we want to keep stepping in the same direction.
-                    console.log(tryCenter)
+                    //console.log(tryCenter)
                     //do not randomize dir
-                    console.log("already room here")
+                    //console.log("already room here")
                     tries++
 
                 } else {
                     //good.
                     potentialCenter = [tryCenter[0], tryCenter[1]]
                     context.tiles[potentialCenter[0]][potentialCenter[1]] = "?"
-                    console.log("good room, placing at: ", potentialCenter)
+                    //console.log("good room, placing at: ", potentialCenter)
 
                     context.pushRoomGemArray(potentialCenter, subroomRadius)
                     break;
                 }
 
             }//inner loop end
-            console.log("i should appear directly after good room")
+            //console.log("i should appear directly after good room")
             if (tries >= 20) {
                 throw ("genRoomFire: stepCard: Could not find good room in allotted tries.")
             }
@@ -376,9 +378,9 @@ class Room {
         let nextRadius = 0;
         let distanceBetween = context.geneDetermine(context.connectionType, -1, subroomRadius * 1.5, subroomRadius * 1.5, subroomRadius * 1.5)
         let thetaInc = 2 * 3.14 / (numSubrooms - 1)
-        console.log("thetaInc:", thetaInc)
+        //console.log("thetaInc:", thetaInc)
         let theta = context.r.getR(2 * 3.14) //randomized starting theta.
-        console.log("starting theta:", theta)
+        //console.log("starting theta:", theta)
         for (let nRooms = 0; nRooms < numSubrooms; nRooms++) {
             if (nRooms == 0) { //first pass
                 currRadius = Math.floor(subroomRadius * (context.r.getR(0.4) + 0.8))
@@ -399,6 +401,7 @@ class Room {
             }
         }
     }
+
     private createCorridors() {
         if (this.connectionType == "W") {
             //no work then! tee hee
@@ -485,7 +488,7 @@ class Room {
                 }
                 break;
             case "A":
-                console.log("making air corridors")
+                //console.log("making air corridors")
                 //draw a three-wide diagonal line from current center to next center.
                 for (let curr = 0; curr < this.gemCenters.length - 1; curr++) {
                     //looping through the current rooms and the next room in the array.
@@ -600,7 +603,7 @@ class Room {
                 }
                 break;
             case "A":
-                console.log("making air corridors")
+                //console.log("making air corridors")
                 //draw a three-wide diagonal line from current center to next center.
                 for (let curr = 0; curr < this.gemCenters.length - 1; curr++) {
                     //looping through the current rooms and the next room in the array.
@@ -636,6 +639,7 @@ class Room {
                 break;
         }
     }
+
     private fillAllRooms() {
         let fillFunc = this.geneDetermine(this.roomShape, this.fillRoomCircle, this.fillRoomRectangle, this.fillRoomDiamond, this.fillRoomTriangle)
         //console.log(this.roomShape)
@@ -645,6 +649,7 @@ class Room {
             i++
         });
     }
+
     private pushRoomGemArray(potentialCenter: number[], currRadius: number) {
         //push center to center array
         this.gemCenters.push(potentialCenter)
@@ -757,12 +762,12 @@ class Room {
             rct++
             if (rct % 2 == 1) { width++ }
         }
-        console.log("done with fillroomtriangle")
+        //console.log("done with fillroomtriangle")
     }
 
-    // thank you stackoverflow for tostring override help
-    //https://stackoverflow.com/questions/35361482/typescript-override-tostring
-    public toString = (): string => {
+    public toString(): string {
+        // thank you stackoverflow for tostring override help
+        //https://stackoverflow.com/questions/35361482/typescript-override-tostring
         let _str: string = ""
         _str += "Seed: " + this.seed + "\n";
         _str += "Gene: " + this.gene + "\n";
@@ -814,4 +819,29 @@ class SubRandom { //this class exists so I can control a room's RNG, isolated fr
         this.seed = _s
     }
 
+}
+
+function tempGeneMaker(seed:number):string{
+    let retVal = ""
+    let myRand = new SubRandom(seed)
+    for(let i = 0; i < 8; i++){
+        let xx = Math.floor(myRand.getR(4))
+        switch(xx){
+            case 0:
+                retVal += "W"
+                break;
+            case 1:
+                retVal += "E"
+                break;
+            case 2:
+                retVal += "F"
+                break;
+            case 3:
+                retVal += "A"
+                break;
+        }
+
+    }
+
+    return retVal
 }
