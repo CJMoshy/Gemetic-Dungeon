@@ -8,7 +8,7 @@ export class Dungeon {
     //generate and draw a room deterministically based on the seed and gene
 
     private currentRoom: Room;
-    private currentRoomTilemap: integer[][];
+    private currentRoomTilemap: integer[];
 
     //max width and height defaults:
     private maxW = 100
@@ -23,7 +23,7 @@ export class Dungeon {
         let tempGene = tempGeneMaker(this.seed)
         this.currentRoom = new Room(this.seed, /* initialGene*/ tempGene, this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
-        this.currentRoomTilemap = [[]]
+        this.currentRoomTilemap = []
         this.currentRoomTilemap = this.currentRoom.parseRoom()
         console.log(this.currentRoomTilemap)
     }
@@ -46,7 +46,7 @@ export class Dungeon {
     public getRoom(): object {
         return this.currentRoom
     }
-    public getRoomParsed(): integer[][] {
+    public getRoomParsed(): integer[] {
         return this.currentRoomTilemap;
     }
     public createNewRoom(newGene: string) {
@@ -161,8 +161,8 @@ class Room {
         }
 
     }
-    public parseRoom():number[][] {
-        let retArray:number[][] = []
+    public parseRoom():number[] {
+        let retArray:number[] = []
         //this function turns the dungeon string thing into a tilemap.
         let solid_wall = this.geneDetermine(this.theme, TILECODES.WALL_W, TILECODES.WALL_E, TILECODES.WALL_F, TILECODES.WALL_A)
         let hall_tile = this.geneDetermine(this.theme, TILECODES.FLOOR_4, TILECODES.FLOOR_3, TILECODES.FLOOR_2, TILECODES.FLOOR_1)
@@ -176,7 +176,6 @@ class Room {
         
         //the phaser code itself will take care of adding additional walls on top of tiles adjacent to solid wall tiles.
         for(let row = 0; row < this.rows; row++){
-            let tR = []
             for(let col = 0; col < this.cols; col++){
                 let appT;
                 switch(this.tiles[row][col]){
@@ -199,10 +198,9 @@ class Room {
                     default:
                         throw ('huh?')
                 }
-                tR.push(appT)
+                retArray.push(appT)
 
             }
-            retArray.push(tR)
         }
         return retArray
     }
