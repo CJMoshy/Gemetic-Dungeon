@@ -14,7 +14,7 @@ export class Dungeon {
     private seed: number;
     constructor(_seed: string, initialGene: string) { //The seed should be pulled from DOM, initialGene comes out of CJ's map.
         this.seedStr = _seed
-        this.seed = XXH.h32(this.seedStr, 0)._low
+        this.seed = 447330477874363800//XXH.h64(this.seedStr,0)._a00 * XXH.h64(this.seedStr,0)._a16 * XXH.h64(this.seedStr,0)._a32 * XXH.h64(this.seedStr,0)._a48
         console.log("dungon: result of hash =", this.seed)
         //tempGene is for randomized testing. remove it for prod
         let tempGene = tempGeneMaker(this.seed)
@@ -102,6 +102,7 @@ class Room {
         this.floorStyle = gene[6]
         this.theme = gene[7]
 
+        console.log(this.gene)
         //second: initialize the empty state of the room.
         this.initMap()
 
@@ -292,6 +293,21 @@ class Room {
                 //console.log("dy2:", dy2, "dx2:", dx2)
                 let temp = [Math.floor(potentialCenter[0] + dy2), Math.floor(potentialCenter[1] + dx2)]
                 potentialCenter = temp
+                console.log("hellooooo")
+                if(temp[0] < 0 + currRadius + 1){
+                    temp[0] += currRadius + 1 - temp[0]
+                } else if (temp[0] >= this.rows - currRadius - 1){
+                    temp[0] -= this.rows - currRadius - 1 + temp[0]
+                }
+                if(temp[1] < 0 + currRadius + 1){
+                    temp[1] += currRadius + 1 - temp[1]
+                } else if (temp[1] >= this.rows - currRadius - 1){
+                    temp[1] -= this.rows - currRadius - 1 + temp[1]
+                }
+                if(temp[0] < 0 + currRadius + 1 || temp[0] >= this.rows - currRadius - 1 || temp[1] < 0 + currRadius + 1 || temp[1] >= this.cols - currRadius - 1){
+                    throw("fire: index checking failed, room out of bounds.")
+                }
+
                 currRadius = nextRadius
                 nextRadius = Math.floor(subroomRadius * (context.r.getR(0.4) + 0.8))
 
@@ -374,7 +390,7 @@ class Room {
                 }
                 //now, check.
                 //out of bounds?
-                if (tryCenter[0] < 0 + subroomRadius || tryCenter[0] > context.rows - subroomRadius || tryCenter[1] < 0 + subroomRadius || tryCenter[1] > context.cols - subroomRadius) {
+                if (tryCenter[0] < 0 + subroomRadius + 1 || tryCenter[0] > context.rows - subroomRadius - 1 || tryCenter[1] < 0 + subroomRadius + 1 || tryCenter[1] > context.cols - subroomRadius - 1) {
                     //restart and randomize again.
                     tryCenter = [potentialCenter[0], potentialCenter[1]]
                     dir = Math.floor(context.r.getR(4))
