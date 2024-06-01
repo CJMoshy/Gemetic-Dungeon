@@ -18,7 +18,7 @@ export class Dungeon {
         console.log("dungon: result of hash =", this.seed)
         //tempGene is for randomized testing. remove it for prod
         let tempGene = tempGeneMaker(this.seed)
-        this.currentRoom = new Room(this.seed, /* tempGene*/ initialGene, this.maxW, this.maxH);
+        this.currentRoom = new Room(this.seed, /* initialGene*/ tempGene, this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
     }
 
