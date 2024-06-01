@@ -43,6 +43,18 @@ export class Dungeon {
     public createNewRoom(newGene: string) {
         this.currentRoom = new Room(this.seed, newGene, this.maxW, this.maxH)
     }
+    public getObstacleStyle():string{
+        return this.currentRoom.obstacleType
+    }
+    public getMainTheme():string{
+        return this.currentRoom.theme
+    }
+    public getBackgroundStyle():string{
+        return this.currentRoom.wallDeco
+    }
+    public getFloorStyle():string{
+        return this.currentRoom.floorStyle
+    }
 }
 
 class Room {
