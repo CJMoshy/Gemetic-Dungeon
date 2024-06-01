@@ -1,4 +1,5 @@
 import Phaser from "phaser"
+import Dungeon from "./scenes/Dungeon"
 
 const CONFIG = {
     type: Phaser.CANVAS,
@@ -20,8 +21,12 @@ const CONFIG = {
     fps: {
         target: 60, 
     },
-    scene: []
+    scene: [Dungeon]
 }
 
+export default CONFIG
+
+
 const GAME = new Phaser.Game(CONFIG)
+
 
