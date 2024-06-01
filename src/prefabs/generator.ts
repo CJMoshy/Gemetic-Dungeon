@@ -349,15 +349,15 @@ class Room {
                 console.log("hellooooo")
                 if (temp[0] < 0 + currRadius + 1) {
                     temp[0] += currRadius + 1 - temp[0]
-                } else if (temp[0] >= this.rows - currRadius - 1) {
-                    temp[0] -= this.rows - currRadius - 1 + temp[0]
+                } else if (temp[0] >= context.rows - currRadius - 1) {
+                    temp[0] -= context.rows - currRadius - 1 + temp[0]
                 }
                 if (temp[1] < 0 + currRadius + 1) {
                     temp[1] += currRadius + 1 - temp[1]
-                } else if (temp[1] >= this.rows - currRadius - 1) {
-                    temp[1] -= this.rows - currRadius - 1 + temp[1]
+                } else if (temp[1] >= context.rows - currRadius - 1) {
+                    temp[1] -= context.rows - currRadius - 1 + temp[1]
                 }
-                if (temp[0] < 0 + currRadius + 1 || temp[0] >= this.rows - currRadius - 1 || temp[1] < 0 + currRadius + 1 || temp[1] >= this.cols - currRadius - 1) {
+                if (temp[0] < 0 + currRadius + 1 || temp[0] >= context.rows - currRadius - 1 || temp[1] < 0 + currRadius + 1 || temp[1] >= context.cols - currRadius - 1) {
                     throw ("fire: index checking failed, room out of bounds.")
                 }
 
