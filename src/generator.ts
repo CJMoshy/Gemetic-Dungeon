@@ -5,19 +5,43 @@ export class Dungeon {
     //contain reference to the "active"
     //generate and draw a room deterministically based on the seed and gene
 
-    currentRoom: Room;
+    private currentRoom: Room;
 
     //max width and height defaults:
-    maxW = 100
-    maxH = 100
-    seed: number;
-    constructor(seed: number, initialGene: string) { //The seed should be pulled from DOM, initialGene comes out of CJ's map.
-        this.seed = seed
+    private maxW = 100
+    private maxH = 100
+    private seedStr: string;
+    private seed: number;
+    constructor(_seed: string, initialGene: string) { //The seed should be pulled from DOM, initialGene comes out of CJ's map.
+        this.seedStr = _seed
+        this.seed = XXH.h32(this.seedStr, 0)
         console.log("dungon: result of hash =", this.seed)
-        //the initial room will be based on seed alone; the skews will all be zero.
+        //tempGene is for randomized testing. remove it for prod
         let tempGene = tempGeneMaker(this.seed)
-        this.currentRoom = new Room(this.seed, tempGene, this.maxW, this.maxH);
+        this.currentRoom = new Room(this.seed, /* tempGene*/ initialGene, this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
+    }
+
+    public getSeed(): number {
+        return this.seed
+    }
+    public getSeedString(): string {
+        return this.seedStr
+    }
+    public getW(): number {
+        return this.maxW
+    }
+    public getH(): number {
+        return this.maxH
+    }
+    public getCurrentGene(): string {
+        return this.currentRoom.gene
+    }
+    public getRoom(): object {
+        return this.currentRoom
+    }
+    public createNewRoom(newGene: string) {
+        this.currentRoom = new Room(this.seed, newGene, this.maxW, this.maxH)
     }
 }
 
@@ -78,7 +102,7 @@ class Room {
 
         //fill the room with traps
 
-        this.decoGemArrayDebug()
+        //this.decoGemArrayDebug()
         console.log("Finished creating the room.")
         console.log(`${this}`) //forces pretty toString.
     }
@@ -821,12 +845,12 @@ class SubRandom { //this class exists so I can control a room's RNG, isolated fr
 
 }
 
-function tempGeneMaker(seed:number):string{
+function tempGeneMaker(seed: number): string {
     let retVal = ""
     let myRand = new SubRandom(seed)
-    for(let i = 0; i < 8; i++){
+    for (let i = 0; i < 8; i++) {
         let xx = Math.floor(myRand.getR(4))
-        switch(xx){
+        switch (xx) {
             case 0:
                 retVal += "W"
                 break;
