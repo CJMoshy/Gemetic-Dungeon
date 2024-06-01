@@ -1,7 +1,5 @@
 import Phaser from "phaser"
-
 import * as Gen from "./prefabs/generator"
-import test from "./lib/Client"
 import DungeonScene from "./scenes/Dungeon"
 
 const CONFIG = {
@@ -27,10 +25,9 @@ const CONFIG = {
     scene: [DungeonScene]
 }
 
-const DUNGEON = new Gen.Dungeon((Math.random()*4294967296).toString(), "WWWWWWWW") //seed: get from dom. gene: get from neural map
-
 export default CONFIG
 
+export const DUNGEON = new Gen.Dungeon((Math.random()*4294967296).toString(), "WWWWWWWW") //seed: get from dom. gene: get from neural map
 
 const GAME = new Phaser.Game(CONFIG)
 

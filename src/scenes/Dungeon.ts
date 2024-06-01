@@ -5,6 +5,9 @@ import test from '../assets/img/gems/powerup-blue.png' //this will become player
 import tileset from '../assets/tilemap/base_tileset.png'
 import mapData from '../assets/tilemap/tileset-1.json'
 
+import { DUNGEON } from "../main"
+
+
 export default class DungeonScene extends Phaser.Scene {
 
     player: Phaser.Physics.Arcade.Sprite
@@ -20,6 +23,7 @@ export default class DungeonScene extends Phaser.Scene {
     }
 
     preload() {
+        
         this.load.image('base-tileset', tileset)
         this.load.tilemapTiledJSON('tilemapJSON', mapData)
 
