@@ -1,11 +1,14 @@
 import * as XXH from "../lib/xxhash.min.js";
 
+export const enum TILECODES { WALL_W, WALL_E, WALL_F, WALL_A, WALL_U, WALL_D, WALL_L, WALL_R, WALL_UL, WALL_UR, WALL_ULR, WALL_DL, WALL_DR, WALL_DLR, WALL_UDL, WALL_UDR, FLOOR_1, FLOOR_2, FLOOR_3, FLOOR_4, BG_W, BG_W2, BG_E, BG_E2, BG_F, BG_F2, BG_A, BG_A2, WATER_SOLO, WATER_DLR, WATER_ULR, WATER_UDL, WATER_UDR, WATER_UL, WATER_UR, WATER_DR, WATER_DL, WATER_D, WATER_U, WATER_L, WATER_R, PIT_SOLO, PIT_DLR, PIT_ULR, PIT_UDL, PIT_UDR, PIT_UL, PIT_UR, PIT_DR, PIT_DL, PIT_D, PIT_U, PIT_L, PIT_R, SPIKE_1, SPIKE_2, BRAZIER, ENTRANCE, EXIT, GEM_W, GEM_E, GEM_F, GEM_A }
+
 export class Dungeon {
     // dungeon base class will:
     //contain reference to the "active"
     //generate and draw a room deterministically based on the seed and gene
 
     private currentRoom: Room;
+    private currentRoomTilemap: integer[][];
 
     //max width and height defaults:
     private maxW = 100
@@ -14,12 +17,15 @@ export class Dungeon {
     private seed: number;
     constructor(_seed: string, initialGene: string) { //The seed should be pulled from DOM, initialGene comes out of CJ's map.
         this.seedStr = _seed
-        this.seed = XXH.h64(this.seedStr,0)._a00 * XXH.h64(this.seedStr,0)._a16 * XXH.h64(this.seedStr,0)._a32 * XXH.h64(this.seedStr,0)._a48
+        this.seed = XXH.h64(this.seedStr, 0)._a00 * XXH.h64(this.seedStr, 0)._a16 * XXH.h64(this.seedStr, 0)._a32 * XXH.h64(this.seedStr, 0)._a48
         console.log("dungon: result of hash =", this.seed)
         //tempGene is for randomized testing. remove it for prod
         let tempGene = tempGeneMaker(this.seed)
         this.currentRoom = new Room(this.seed, /* initialGene*/ tempGene, this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
+        this.currentRoomTilemap = [[]]
+        this.currentRoomTilemap = this.currentRoom.parseRoom()
+        console.log(this.currentRoomTilemap)
     }
 
     public getSeed(): number {
@@ -40,19 +46,23 @@ export class Dungeon {
     public getRoom(): object {
         return this.currentRoom
     }
+    public getRoomParsed(): integer[][] {
+        return this.currentRoomTilemap;
+    }
     public createNewRoom(newGene: string) {
         this.currentRoom = new Room(this.seed, newGene, this.maxW, this.maxH)
+        this.currentRoomTilemap = this.currentRoom.parseRoom()
     }
-    public getObstacleStyle():string{
+    public getObstacleStyle(): string {
         return this.currentRoom.obstacleType
     }
-    public getMainTheme():string{
+    public getMainTheme(): string {
         return this.currentRoom.theme
     }
-    public getBackgroundStyle():string{
+    public getBackgroundStyle(): string {
         return this.currentRoom.wallDeco
     }
-    public getFloorStyle():string{
+    public getFloorStyle(): string {
         return this.currentRoom.floorStyle
     }
 }
@@ -150,6 +160,51 @@ class Room {
                 break;
         }
 
+    }
+    public parseRoom():number[][] {
+        let retArray:number[][] = []
+        //this function turns the dungeon string thing into a tilemap.
+        let solid_wall = this.geneDetermine(this.theme, TILECODES.WALL_W, TILECODES.WALL_E, TILECODES.WALL_F, TILECODES.WALL_A)
+        let hall_tile = this.geneDetermine(this.theme, TILECODES.FLOOR_4, TILECODES.FLOOR_3, TILECODES.FLOOR_2, TILECODES.FLOOR_1)
+        let floor_a = this.geneDetermine(this.theme, TILECODES.FLOOR_1, TILECODES.FLOOR_2, TILECODES.FLOOR_3, TILECODES.FLOOR_4)
+        let floor_b = this.geneDetermine(this.theme, TILECODES.FLOOR_2, TILECODES.FLOOR_3, TILECODES.FLOOR_4, TILECODES.FLOOR_1)
+        let floor_c = this.geneDetermine(this.theme, TILECODES.FLOOR_3, TILECODES.FLOOR_4, TILECODES.FLOOR_1, TILECODES.FLOOR_2)
+        let floor_d = this.geneDetermine(this.theme, TILECODES.FLOOR_4, TILECODES.FLOOR_1, TILECODES.FLOOR_2, TILECODES.FLOOR_3)
+        let trap = this.geneDetermine(this.obstacleType, TILECODES.WATER_SOLO, TILECODES.PIT_SOLO, TILECODES.BRAZIER, TILECODES.SPIKE_1)
+        
+            
+        
+        //the phaser code itself will take care of adding additional walls on top of tiles adjacent to solid wall tiles.
+        for(let row = 0; row < this.rows; row++){
+            let tR = []
+            for(let col = 0; col < this.cols; col++){
+                let appT;
+                switch(this.tiles[row][col]){
+                    case ".":
+                        appT = solid_wall
+                        break
+                    case "_":
+                        appT = hall_tile
+                        break
+                    case ",":
+                    case "!":
+                    case "x":
+                        //will need to do more complex later.
+                        //for now, just make it the floor_a
+                        appT = floor_a
+                        break
+                    case "^":
+                        appT = trap
+                        break;
+                    default:
+                        throw ('huh?')
+                }
+                tR.push(appT)
+
+            }
+            retArray.push(tR)
+        }
+        return retArray
     }
 
     private createSubrooms() {
@@ -294,18 +349,18 @@ class Room {
                 let temp = [Math.floor(potentialCenter[0] + dy2), Math.floor(potentialCenter[1] + dx2)]
                 potentialCenter = temp
                 console.log("hellooooo")
-                if(temp[0] < 0 + currRadius + 1){
+                if (temp[0] < 0 + currRadius + 1) {
                     temp[0] += currRadius + 1 - temp[0]
-                } else if (temp[0] >= this.rows - currRadius - 1){
+                } else if (temp[0] >= this.rows - currRadius - 1) {
                     temp[0] -= this.rows - currRadius - 1 + temp[0]
                 }
-                if(temp[1] < 0 + currRadius + 1){
+                if (temp[1] < 0 + currRadius + 1) {
                     temp[1] += currRadius + 1 - temp[1]
-                } else if (temp[1] >= this.rows - currRadius - 1){
+                } else if (temp[1] >= this.rows - currRadius - 1) {
                     temp[1] -= this.rows - currRadius - 1 + temp[1]
                 }
-                if(temp[0] < 0 + currRadius + 1 || temp[0] >= this.rows - currRadius - 1 || temp[1] < 0 + currRadius + 1 || temp[1] >= this.cols - currRadius - 1){
-                    throw("fire: index checking failed, room out of bounds.")
+                if (temp[0] < 0 + currRadius + 1 || temp[0] >= this.rows - currRadius - 1 || temp[1] < 0 + currRadius + 1 || temp[1] >= this.cols - currRadius - 1) {
+                    throw ("fire: index checking failed, room out of bounds.")
                 }
 
                 currRadius = nextRadius
