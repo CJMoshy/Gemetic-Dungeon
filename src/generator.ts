@@ -14,7 +14,7 @@ export class Dungeon {
     private seed: number;
     constructor(_seed: string, initialGene: string) { //The seed should be pulled from DOM, initialGene comes out of CJ's map.
         this.seedStr = _seed
-        this.seed = XXH.h32(this.seedStr, 0)
+        this.seed = XXH.h32(this.seedStr, 0).low
         console.log("dungon: result of hash =", this.seed)
         //tempGene is for randomized testing. remove it for prod
         let tempGene = tempGeneMaker(this.seed)
