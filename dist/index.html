@@ -8,6 +8,18 @@
 </head>
 <body>
     <div id="phaser-game" style="border: 5px solid red; padding: auto;"></div>
-    <input type="text" id="playerSeedEntry">
+    <div>
+        <label for="playerSeedEntry">Enter a String:</label>
+        <input type="text" id="playerSeedEntry"/>
+    </div>
+    <script>
+        function submitMe(input){
+            console.log(input)
+            return input 
+        }
+    </script>
+    <button onclick = "submitMe(document.getElementById('playerSeedEntry').value)" id ="testButton">Submit</button>
+    
+</form>
 </body>
 </html>
