@@ -5,7 +5,7 @@ import test from '../assets/img/gems/powerup-blue.png' //this will become player
 import tileset from '../assets/tilemap/base_tileset.png'
 import mapData from '../assets/tilemap/tileset-1.json'
 
-export default class Dungeon extends Phaser.Scene {
+export default class DungeonScene extends Phaser.Scene {
 
     player: Phaser.Physics.Arcade.Sprite
     velocity: number
@@ -32,9 +32,14 @@ export default class Dungeon extends Phaser.Scene {
         const map = this.add.tilemap('tilemapJSON')
         const tileset = map.addTilesetImage('dungeon_tileset', 'base-tileset')
         const bgLayer = map.createLayer('Background', tileset)
+        bgLayer.setCollisionByProperty({collides: true})
 
-        //create Player
         this.player = new Player(this, 200, 200, 'test', 0)
+
+        this.physics.add.collider(this.player, bgLayer)
+       
+
+
        
     }
 

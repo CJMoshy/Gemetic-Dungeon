@@ -1,17 +1,17 @@
 
 
 
-interface data{
+interface gemdata{
     message: string,
     gems: number[]
 }
 
-const data: data = {
+const data: gemdata = {
     message : 'test',
     gems : [0, 10, 2, 5]
 }
 
-export default async function test(){
+export default async function test(data: gemdata): Promise<void>{
     //todo update endpoint
     const test1 = await fetch('http://127.0.0.1:5000/run', {
         method: 'POST',
