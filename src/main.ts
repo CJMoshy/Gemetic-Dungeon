@@ -1,6 +1,8 @@
 import Phaser from "phaser"
 
 import * as Gen from "./generator"
+import Dungeon from "./scenes/Dungeon"
+import test from "./lib/Client"
 
 const CONFIG = {
     type: Phaser.CANVAS,
@@ -11,7 +13,7 @@ const CONFIG = {
     },
     // width: 500,  //we might want to manually set a size in the future, for now its auto sizing
     // height: 450,
-    backgroundColor: '#FACADE',
+    // backgroundColor: '#FACADE',
     // pixelArt: true,
     physics: {
         default: 'arcade',
@@ -22,8 +24,13 @@ const CONFIG = {
     fps: {
         target: 60, 
     },
-    scene: []
+    scene: [Dungeon]
 }
+
 const DUNGEON = new Gen.Dungeon((Math.random()*4294967296).toString(), "WWWWWWWW") //seed: get from dom. gene: get from neural map
 
+export default CONFIG
+
+
 const GAME = new Phaser.Game(CONFIG)
+

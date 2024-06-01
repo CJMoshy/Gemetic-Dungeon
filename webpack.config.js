@@ -1,3 +1,4 @@
+const { watch } = require('fs')
 const path = require('path')
 
 module.exports = {
@@ -27,4 +28,10 @@ module.exports = {
         filename: 'main.js',
         path: path.resolve(__dirname, 'dist')
     },
+    // watch: true,
+    // watchOptions: {
+    //     aggregateTimeout: 250,
+    //     ignored: /node_modules/,
+    //     poll: 1000
+    // }
 }
