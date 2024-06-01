@@ -1,8 +1,8 @@
 import Phaser from "phaser"
 
 import * as Gen from "./prefabs/generator"
-import Dungeon from "./scenes/Dungeon"
 import test from "./lib/Client"
+import DungeonScene from "./scenes/Dungeon"
 
 const CONFIG = {
     type: Phaser.CANVAS,
@@ -24,7 +24,7 @@ const CONFIG = {
     fps: {
         target: 60, 
     },
-    scene: [Dungeon]
+    scene: [DungeonScene]
 }
 
 const DUNGEON = new Gen.Dungeon((Math.random()*4294967296).toString(), "WWWWWWWW") //seed: get from dom. gene: get from neural map
