@@ -1,6 +1,6 @@
 import Phaser from "phaser"
 
-import * as Gen from "./generator"
+import * as Gen from "./prefabs/generator"
 import Dungeon from "./scenes/Dungeon"
 import test from "./lib/Client"
 

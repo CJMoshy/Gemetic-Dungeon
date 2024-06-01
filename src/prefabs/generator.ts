@@ -1,4 +1,4 @@
-import * as XXH from "./xxhash.min.js";
+import * as XXH from "../lib/xxhash.min.js";
 
 export class Dungeon {
     // dungeon base class will:
