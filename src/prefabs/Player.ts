@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-// import { keyUp } from "../main";
+
 //invetory goes here
 
 

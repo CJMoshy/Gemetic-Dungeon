@@ -18,14 +18,14 @@ export class Dungeon {
     constructor(_seed: string, initialGene: string) { //The seed should be pulled from DOM, initialGene comes out of CJ's map.
         this.seedStr = _seed
         this.seed = XXH.h64(this.seedStr, 0)._a00 * XXH.h64(this.seedStr, 0)._a16 * XXH.h64(this.seedStr, 0)._a32 * XXH.h64(this.seedStr, 0)._a48
-        console.log("dungon: result of hash =", this.seed)
+        // console.log("dungon: result of hash =", this.seed)
         //tempGene is for randomized testing. remove it for prod
         let tempGene = tempGeneMaker(this.seed)
         this.currentRoom = new Room(this.seed, /* initialGene*/ tempGene, this.maxW, this.maxH);
-        console.log("Finished Initializing Dungeon!")
+        // console.log("Finished Initializing Dungeon!")
         this.currentRoomTilemap = [[]]
         this.currentRoomTilemap = this.currentRoom.parseRoom()
-        console.log(this.currentRoomTilemap)
+        // console.log(this.currentRoomTilemap)
     }
 
     public getSeed(): number {
