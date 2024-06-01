@@ -14,7 +14,7 @@ export class Dungeon {
     private seed: number;
     constructor(_seed: string, initialGene: string) { //The seed should be pulled from DOM, initialGene comes out of CJ's map.
         this.seedStr = _seed
-        this.seed = 447330477874363800//XXH.h64(this.seedStr,0)._a00 * XXH.h64(this.seedStr,0)._a16 * XXH.h64(this.seedStr,0)._a32 * XXH.h64(this.seedStr,0)._a48
+        this.seed = XXH.h64(this.seedStr,0)._a00 * XXH.h64(this.seedStr,0)._a16 * XXH.h64(this.seedStr,0)._a32 * XXH.h64(this.seedStr,0)._a48
         console.log("dungon: result of hash =", this.seed)
         //tempGene is for randomized testing. remove it for prod
         let tempGene = tempGeneMaker(this.seed)
