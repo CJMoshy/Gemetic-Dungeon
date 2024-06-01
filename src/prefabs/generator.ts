@@ -18,7 +18,7 @@ export class Dungeon {
         console.log("dungon: result of hash =", this.seed)
         //tempGene is for randomized testing. remove it for prod
         let tempGene = tempGeneMaker(this.seed)
-        this.currentRoom = new Room(this.seed, /* tempGene*/ initialGene, this.maxW, this.maxH);
+        this.currentRoom = new Room(this.seed, /* initialGene*/ tempGene, this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
     }
 
@@ -42,6 +42,18 @@ export class Dungeon {
     }
     public createNewRoom(newGene: string) {
         this.currentRoom = new Room(this.seed, newGene, this.maxW, this.maxH)
+    }
+    public getObstacleStyle():string{
+        return this.currentRoom.obstacleType
+    }
+    public getMainTheme():string{
+        return this.currentRoom.theme
+    }
+    public getBackgroundStyle():string{
+        return this.currentRoom.wallDeco
+    }
+    public getFloorStyle():string{
+        return this.currentRoom.floorStyle
     }
 }
 
@@ -102,7 +114,7 @@ class Room {
 
         //fill the room with traps
 
-        //this.decoGemArrayDebug()
+        this.decoGemArrayDebug()
         console.log("Finished creating the room.")
         console.log(`${this}`) //forces pretty toString.
     }
