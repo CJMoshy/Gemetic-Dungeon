@@ -38,9 +38,6 @@ export default class DungeonScene extends Phaser.Scene {
 
         this.physics.add.collider(this.player, bgLayer)
        
-
-
-       
     }
 
     update(time: number, delta: number): void {
