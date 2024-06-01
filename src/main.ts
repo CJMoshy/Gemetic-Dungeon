@@ -1,5 +1,6 @@
 import Phaser from "phaser"
 import Dungeon from "./scenes/Dungeon"
+import test from "./lib/Client"
 
 const CONFIG = {
     type: Phaser.CANVAS,
@@ -10,7 +11,7 @@ const CONFIG = {
     },
     // width: 500,  //we might want to manually set a size in the future, for now its auto sizing
     // height: 450,
-    backgroundColor: '#FACADE',
+    // backgroundColor: '#FACADE',
     // pixelArt: true,
     physics: {
         default: 'arcade',
@@ -28,5 +29,8 @@ export default CONFIG
 
 
 const GAME = new Phaser.Game(CONFIG)
+
+// test()
+
 
 
