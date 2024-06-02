@@ -148,6 +148,8 @@ class Room {
         this.createSubrooms()
         this.createCorridors()
         this.fillAllRooms()
+        //deco gem array debug - this needs to stay here so entrances and exits don't spawn on gem spawns.
+        this.decoGemArrayDebug()
 
         //fill the room with gems
 
@@ -156,7 +158,6 @@ class Room {
         //give entrance and exit
         this.entranceExit()
 
-        this.decoGemArrayDebug()
         console.log("Finished creating the room.")
         console.log(`${this}`) //forces pretty toString.
     }
@@ -247,13 +248,14 @@ class Room {
         this.entrance = [randY, randX]
         this.tiles[randY][randX] = "n" //n for ntrance
 
-        randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
+        randX = Math.floor(this.r.getR(this.cols))
+        randY = Math.floor(this.r.getR(this.rows))
         while (this.tiles[randY][randX] != ",") {
             randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
         }
         this.exit = [randY, randX]
         this.tiles[randY][randX] = "e" //e for exit
-
+        //console.log("finished placing entrance and exit.")
     }
     private createSubrooms() {
         //here, we create the outlines & fills of the rooms, and connect them with our corridors.
