@@ -1,6 +1,7 @@
 import Phaser from "phaser"
 import * as Gen from "./prefabs/generator"
 import DungeonScene from "./scenes/Dungeon"
+import IntermissionScene from "./scenes/Intermission"
 
 const CONFIG = {
     type: Phaser.CANVAS,
@@ -9,8 +10,8 @@ const CONFIG = {
         autoCenter: Phaser.Scale.CENTER_BOTH,
         size: Phaser.Scale.FIT
     },
-    // width: 500,  //we might want to manually set a size in the future, for now its auto sizing
-    // height: 450,
+    width: 800,  //we might want to manually set a size in the future, for now its auto sizing
+    height: 800,
     // backgroundColor: '#FACADE',
     // pixelArt: true,
     physics: {
@@ -22,7 +23,7 @@ const CONFIG = {
     fps: {
         target: 60, 
     },
-    scene: [DungeonScene]
+    scene: [DungeonScene, IntermissionScene]
 }
 
 export default CONFIG

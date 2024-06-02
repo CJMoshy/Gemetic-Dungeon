@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-// import { keyUp } from "../main";
+import Inventory from "../lib/Inventory";
 //invetory goes here
 
 
@@ -7,13 +7,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     keys: any
     velocity: number
+    inventory: Inventory
+
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame: number) {
         super(scene, x, y, texture, frame)
 
         scene.add.existing(this)
         scene.physics.add.existing(this)
-        scene.events.on('update', this.update, this)
+        //scene.events.on('update', this.update, this)
 
 
         this.keys = scene.input.keyboard?.createCursorKeys()
@@ -22,7 +24,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         //todo collisions with gems
 
         //todo inventory
-
+        this.inventory = new Inventory(undefined) //todo might have to fix this
 
         //todo data exporter
     }
@@ -54,4 +56,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.setVelocity(this.velocity * vector.x, this.velocity * vector.y)
     }
 
+    //collides with gems
+    handleCollision(){}
 }

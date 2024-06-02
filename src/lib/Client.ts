@@ -6,6 +6,7 @@ interface gemdata{
     gems: number[]
 }
 
+//this is a test
 const data: gemdata = {
     message : 'test',
     gems : [0, 10, 2, 5]
@@ -21,7 +22,6 @@ export default async function test(data: gemdata): Promise<void>{
         body: JSON.stringify(data)
     })
   
-    
     const txt = await test1.text()
     console.log(txt)
 }

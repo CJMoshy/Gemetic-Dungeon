@@ -1,6 +1,29 @@
 import * as XXH from "../lib/xxhash.min.js";
 
-export const enum TILECODES { WALL_W, WALL_E, WALL_F, WALL_A, WALL_U, WALL_D, WALL_L, WALL_R, WALL_UL, WALL_UR, WALL_ULR, WALL_DL, WALL_DR, WALL_DLR, WALL_UDL, WALL_UDR, FLOOR_1, FLOOR_2, FLOOR_3, FLOOR_4, BG_W, BG_W2, BG_E, BG_E2, BG_F, BG_F2, BG_A, BG_A2, WATER_SOLO, WATER_DLR, WATER_ULR, WATER_UDL, WATER_UDR, WATER_UL, WATER_UR, WATER_DR, WATER_DL, WATER_D, WATER_U, WATER_L, WATER_R, PIT_SOLO, PIT_DLR, PIT_ULR, PIT_UDL, PIT_UDR, PIT_UL, PIT_UR, PIT_DR, PIT_DL, PIT_D, PIT_U, PIT_L, PIT_R, SPIKE_1, SPIKE_2, BRAZIER, ENTRANCE, EXIT, GEM_W, GEM_E, GEM_F, GEM_A }
+export const enum TILECODES {
+    WALL_W, WALL_E, WALL_F, WALL_A,
+
+    WALL_U, WALL_D, WALL_L, WALL_R,
+    WALL_UL, WALL_UR, WALL_ULR, WALL_DL, WALL_DR, WALL_DLR, WALL_UDL, WALL_UDR,
+
+    FLOOR_1, FLOOR_2, FLOOR_3, FLOOR_4,
+    FLOOR_1T, FLOOR_2T, FLOOR_3T, FLOOR_4T,
+    BG_W, BG_E, BG_F, BG_A,
+
+    WATER_SOLO, WATER_DLR, WATER_ULR, WATER_UDL, WATER_UDR,
+    WATER_UL, WATER_UR, WATER_DR, WATER_DL,
+    WATER_D, WATER_U, WATER_L, WATER_R,
+
+    PIT_SOLO, PIT_DLR, PIT_ULR, PIT_UDL, PIT_UDR, 
+    PIT_UL, PIT_UR, PIT_DR, PIT_DL, 
+    PIT_D, PIT_U, PIT_L, PIT_R, 
+    
+    SPIKE_1, SPIKE_2, BRAZIER, 
+
+    ENTRANCE, EXIT, 
+
+    GEM_W, GEM_E, GEM_F, GEM_A
+}
 
 export class Dungeon {
     // dungeon base class will:
@@ -8,7 +31,7 @@ export class Dungeon {
     //generate and draw a room deterministically based on the seed and gene
 
     private currentRoom: Room;
-    private currentRoomTilemap: integer[][];
+    private currentRoomTilemap: integer[];
 
     //max width and height defaults:
     private maxW = 100
@@ -18,14 +41,14 @@ export class Dungeon {
     constructor(_seed: string, initialGene: string) { //The seed should be pulled from DOM, initialGene comes out of CJ's map.
         this.seedStr = _seed
         this.seed = XXH.h64(this.seedStr, 0)._a00 * XXH.h64(this.seedStr, 0)._a16 * XXH.h64(this.seedStr, 0)._a32 * XXH.h64(this.seedStr, 0)._a48
-        console.log("dungon: result of hash =", this.seed)
+        // console.log("dungon: result of hash =", this.seed)
         //tempGene is for randomized testing. remove it for prod
         let tempGene = tempGeneMaker(this.seed)
         this.currentRoom = new Room(this.seed, /* initialGene*/ tempGene, this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
-        this.currentRoomTilemap = [[]]
+        this.currentRoomTilemap = []
         this.currentRoomTilemap = this.currentRoom.parseRoom()
-        console.log(this.currentRoomTilemap)
+        // console.log(this.currentRoomTilemap)
     }
 
     public getSeed(): number {
@@ -46,7 +69,7 @@ export class Dungeon {
     public getRoom(): object {
         return this.currentRoom
     }
-    public getRoomParsed(): integer[][] {
+    public getRoomParsed(): integer[] {
         return this.currentRoomTilemap;
     }
     public createNewRoom(newGene: string) {
@@ -92,6 +115,9 @@ class Room {
     theme: string; //W,E,F,A
     //store all of these as strings for continuity purposes; they will be evaluated in their respective functions.
 
+    entrance: number[]
+    exit: number[]
+
     constructor(seed: number, gene: string/*length 8*/, width: number, height: number) {
         if (gene.length != 8) { throw ("Room:Constructor:Gene not length 8.") }
         if (!this.geneRegex.test(gene)) { throw ("Room: Constructor: Gene does not match gene regex pattern.") }
@@ -112,6 +138,8 @@ class Room {
         this.floorStyle = gene[6]
         this.theme = gene[7]
 
+        this.entrance = []
+        this.exit = []
         console.log(this.gene)
         //second: initialize the empty state of the room.
         this.initMap()
@@ -124,6 +152,9 @@ class Room {
         //fill the room with gems
 
         //fill the room with traps
+
+        //give entrance and exit
+        this.entranceExit()
 
         this.decoGemArrayDebug()
         console.log("Finished creating the room.")
@@ -161,52 +192,69 @@ class Room {
         }
 
     }
-    public parseRoom():number[][] {
-        let retArray:number[][] = []
+    public parseRoom(): number[] {
+        let retArray: number[] = []
         //this function turns the dungeon string thing into a tilemap.
         let solid_wall = this.geneDetermine(this.theme, TILECODES.WALL_W, TILECODES.WALL_E, TILECODES.WALL_F, TILECODES.WALL_A)
-        let hall_tile = this.geneDetermine(this.theme, TILECODES.FLOOR_4, TILECODES.FLOOR_3, TILECODES.FLOOR_2, TILECODES.FLOOR_1)
-        let floor_a = this.geneDetermine(this.theme, TILECODES.FLOOR_1, TILECODES.FLOOR_2, TILECODES.FLOOR_3, TILECODES.FLOOR_4)
-        let floor_b = this.geneDetermine(this.theme, TILECODES.FLOOR_2, TILECODES.FLOOR_3, TILECODES.FLOOR_4, TILECODES.FLOOR_1)
-        let floor_c = this.geneDetermine(this.theme, TILECODES.FLOOR_3, TILECODES.FLOOR_4, TILECODES.FLOOR_1, TILECODES.FLOOR_2)
-        let floor_d = this.geneDetermine(this.theme, TILECODES.FLOOR_4, TILECODES.FLOOR_1, TILECODES.FLOOR_2, TILECODES.FLOOR_3)
+        let hall_tile = TILECODES.FLOOR_1
+        let floor_bg = this.geneDetermine(this.theme, TILECODES.BG_W, TILECODES.BG_E, TILECODES.BG_F, TILECODES.BG_A)
+        
         let trap = this.geneDetermine(this.obstacleType, TILECODES.WATER_SOLO, TILECODES.PIT_SOLO, TILECODES.BRAZIER, TILECODES.SPIKE_1)
-        
-            
-        
+
         //the phaser code itself will take care of adding additional walls on top of tiles adjacent to solid wall tiles.
-        for(let row = 0; row < this.rows; row++){
-            let tR = []
-            for(let col = 0; col < this.cols; col++){
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
                 let appT;
-                switch(this.tiles[row][col]){
+                switch (this.tiles[row][col]) {
                     case ".":
                         appT = solid_wall
                         break
                     case "_":
-                        appT = hall_tile
+                        appT = hall_tile + Math.floor(this.r.getR(3))
                         break
                     case ",":
                     case "!":
                     case "x":
                         //will need to do more complex later.
-                        //for now, just make it the floor_a
-                        appT = floor_a
+                        //for now, just make it the floor_bg
+                        appT = floor_bg
+                        //renderer will overlay tile bg's in phaser
                         break
                     case "^":
                         appT = trap
                         break;
+                    case "n":
+                        appT = TILECODES.ENTRANCE
+                        break;
+                    case "e":
+                        appT = TILECODES.EXIT
+                        break;
                     default:
                         throw ('huh?')
                 }
-                tR.push(appT)
+                retArray.push(appT)
 
             }
-            retArray.push(tR)
         }
         return retArray
     }
 
+    private entranceExit() {
+        let randX: number = Math.floor(this.r.getR(this.cols)), randY: number = Math.floor(this.r.getR(this.rows))
+        while (this.tiles[randY][randX] != ",") {
+            randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
+        }
+        this.entrance = [randY, randX]
+        this.tiles[randY][randX] = "n" //n for ntrance
+
+        randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
+        while (this.tiles[randY][randX] != ",") {
+            randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
+        }
+        this.exit = [randY, randX]
+        this.tiles[randY][randX] = "e" //e for exit
+
+    }
     private createSubrooms() {
         //here, we create the outlines & fills of the rooms, and connect them with our corridors.
         //Min of 4 subrooms, max of 10.
@@ -351,15 +399,15 @@ class Room {
                 console.log("hellooooo")
                 if (temp[0] < 0 + currRadius + 1) {
                     temp[0] += currRadius + 1 - temp[0]
-                } else if (temp[0] >= this.rows - currRadius - 1) {
-                    temp[0] -= this.rows - currRadius - 1 + temp[0]
+                } else if (temp[0] >= context.rows - currRadius - 1) {
+                    temp[0] -= context.rows - currRadius - 1 + temp[0]
                 }
                 if (temp[1] < 0 + currRadius + 1) {
                     temp[1] += currRadius + 1 - temp[1]
-                } else if (temp[1] >= this.rows - currRadius - 1) {
-                    temp[1] -= this.rows - currRadius - 1 + temp[1]
+                } else if (temp[1] >= context.rows - currRadius - 1) {
+                    temp[1] -= context.rows - currRadius - 1 + temp[1]
                 }
-                if (temp[0] < 0 + currRadius + 1 || temp[0] >= this.rows - currRadius - 1 || temp[1] < 0 + currRadius + 1 || temp[1] >= this.cols - currRadius - 1) {
+                if (temp[0] < 0 + currRadius + 1 || temp[0] >= context.rows - currRadius - 1 || temp[1] < 0 + currRadius + 1 || temp[1] >= context.cols - currRadius - 1) {
                     throw ("fire: index checking failed, room out of bounds.")
                 }
 
@@ -928,7 +976,7 @@ class SubRandom { //this class exists so I can control a room's RNG, isolated fr
 
 }
 
-function tempGeneMaker(seed: number): string {
+export function tempGeneMaker(seed: number): string {
     let retVal = ""
     let myRand = new SubRandom(seed)
     for (let i = 0; i < 8; i++) {
