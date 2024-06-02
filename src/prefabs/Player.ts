@@ -15,7 +15,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
         scene.add.existing(this)
         scene.physics.add.existing(this)
-        scene.events.on('update', this.update, this)
+        //scene.events.on('update', this.update, this)
 
 
         this.keys = scene.input.keyboard?.createCursorKeys()
