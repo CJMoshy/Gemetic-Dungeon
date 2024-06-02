@@ -1,6 +1,29 @@
 import * as XXH from "../lib/xxhash.min.js";
 
-export const enum TILECODES { WALL_W, WALL_E, WALL_F, WALL_A, WALL_U, WALL_D, WALL_L, WALL_R, WALL_UL, WALL_UR, WALL_ULR, WALL_DL, WALL_DR, WALL_DLR, WALL_UDL, WALL_UDR, FLOOR_1, FLOOR_2, FLOOR_3, FLOOR_4, BG_W, BG_W2, BG_E, BG_E2, BG_F, BG_F2, BG_A, BG_A2, WATER_SOLO, WATER_DLR, WATER_ULR, WATER_UDL, WATER_UDR, WATER_UL, WATER_UR, WATER_DR, WATER_DL, WATER_D, WATER_U, WATER_L, WATER_R, PIT_SOLO, PIT_DLR, PIT_ULR, PIT_UDL, PIT_UDR, PIT_UL, PIT_UR, PIT_DR, PIT_DL, PIT_D, PIT_U, PIT_L, PIT_R, SPIKE_1, SPIKE_2, BRAZIER, ENTRANCE, EXIT, GEM_W, GEM_E, GEM_F, GEM_A }
+export const enum TILECODES {
+    WALL_W, WALL_E, WALL_F, WALL_A,
+
+    WALL_U, WALL_D, WALL_L, WALL_R,
+    WALL_UL, WALL_UR, WALL_ULR, WALL_DL, WALL_DR, WALL_DLR, WALL_UDL, WALL_UDR,
+
+    FLOOR_1, FLOOR_2, FLOOR_3, FLOOR_4,
+    FLOOR_1T, FLOOR_2T, FLOOR_3T, FLOOR_4T,
+    BG_W, BG_E, BG_F, BG_A,
+
+    WATER_SOLO, WATER_DLR, WATER_ULR, WATER_UDL, WATER_UDR,
+    WATER_UL, WATER_UR, WATER_DR, WATER_DL,
+    WATER_D, WATER_U, WATER_L, WATER_R,
+
+    PIT_SOLO, PIT_DLR, PIT_ULR, PIT_UDL, PIT_UDR, 
+    PIT_UL, PIT_UR, PIT_DR, PIT_DL, 
+    PIT_D, PIT_U, PIT_L, PIT_R, 
+    
+    SPIKE_1, SPIKE_2, BRAZIER, 
+
+    ENTRANCE, EXIT, 
+
+    GEM_W, GEM_E, GEM_F, GEM_A
+}
 
 export class Dungeon {
     // dungeon base class will:
@@ -92,8 +115,8 @@ class Room {
     theme: string; //W,E,F,A
     //store all of these as strings for continuity purposes; they will be evaluated in their respective functions.
 
-    entrance:number[]
-    exit:number[]
+    entrance: number[]
+    exit: number[]
 
     constructor(seed: number, gene: string/*length 8*/, width: number, height: number) {
         if (gene.length != 8) { throw ("Room:Constructor:Gene not length 8.") }
@@ -169,34 +192,33 @@ class Room {
         }
 
     }
-    public parseRoom():number[] {
-        let retArray:number[] = []
+    public parseRoom(): number[] {
+        let retArray: number[] = []
         //this function turns the dungeon string thing into a tilemap.
         let solid_wall = this.geneDetermine(this.theme, TILECODES.WALL_W, TILECODES.WALL_E, TILECODES.WALL_F, TILECODES.WALL_A)
-        let hall_tile = this.geneDetermine(this.theme, TILECODES.FLOOR_4, TILECODES.FLOOR_3, TILECODES.FLOOR_2, TILECODES.FLOOR_1)
-        let floor_a = this.geneDetermine(this.theme, TILECODES.FLOOR_1, TILECODES.FLOOR_2, TILECODES.FLOOR_3, TILECODES.FLOOR_4)
-        let floor_b = this.geneDetermine(this.theme, TILECODES.FLOOR_2, TILECODES.FLOOR_3, TILECODES.FLOOR_4, TILECODES.FLOOR_1)
-        let floor_c = this.geneDetermine(this.theme, TILECODES.FLOOR_3, TILECODES.FLOOR_4, TILECODES.FLOOR_1, TILECODES.FLOOR_2)
-        let floor_d = this.geneDetermine(this.theme, TILECODES.FLOOR_4, TILECODES.FLOOR_1, TILECODES.FLOOR_2, TILECODES.FLOOR_3)
-        let trap = this.geneDetermine(this.obstacleType, TILECODES.WATER_SOLO, TILECODES.PIT_SOLO, TILECODES.BRAZIER, TILECODES.SPIKE_1)
+        let hall_tile = TILECODES.FLOOR_1
+        let floor_bg = this.geneDetermine(this.theme, TILECODES.BG_W, TILECODES.BG_E, TILECODES.BG_F, TILECODES.BG_A)
         
+        let trap = this.geneDetermine(this.obstacleType, TILECODES.WATER_SOLO, TILECODES.PIT_SOLO, TILECODES.BRAZIER, TILECODES.SPIKE_1)
+
         //the phaser code itself will take care of adding additional walls on top of tiles adjacent to solid wall tiles.
-        for(let row = 0; row < this.rows; row++){
-            for(let col = 0; col < this.cols; col++){
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
                 let appT;
-                switch(this.tiles[row][col]){
+                switch (this.tiles[row][col]) {
                     case ".":
                         appT = solid_wall
                         break
                     case "_":
-                        appT = hall_tile
+                        appT = hall_tile + Math.floor(this.r.getR(3))
                         break
                     case ",":
                     case "!":
                     case "x":
                         //will need to do more complex later.
-                        //for now, just make it the floor_a
-                        appT = floor_a
+                        //for now, just make it the floor_bg
+                        appT = floor_bg
+                        //renderer will overlay tile bg's in phaser
                         break
                     case "^":
                         appT = trap
@@ -217,16 +239,16 @@ class Room {
         return retArray
     }
 
-    private entranceExit(){
-        let randX:number = Math.floor(this.r.getR(this.cols)), randY:number = Math.floor(this.r.getR(this.rows))
-        while(this.tiles[randY][randX] != ","){
+    private entranceExit() {
+        let randX: number = Math.floor(this.r.getR(this.cols)), randY: number = Math.floor(this.r.getR(this.rows))
+        while (this.tiles[randY][randX] != ",") {
             randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
         }
         this.entrance = [randY, randX]
         this.tiles[randY][randX] = "n" //n for ntrance
 
         randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
-        while(this.tiles[randY][randX] != ","){
+        while (this.tiles[randY][randX] != ",") {
             randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
         }
         this.exit = [randY, randX]
@@ -954,7 +976,7 @@ class SubRandom { //this class exists so I can control a room's RNG, isolated fr
 
 }
 
-function tempGeneMaker(seed: number): string {
+export function tempGeneMaker(seed: number): string {
     let retVal = ""
     let myRand = new SubRandom(seed)
     for (let i = 0; i < 8; i++) {
