@@ -1,8 +1,7 @@
 import Phaser from "phaser"
-
 import * as Gen from "./prefabs/generator"
-import test from "./lib/Client"
 import DungeonScene from "./scenes/Dungeon"
+import IntermissionScene from "./scenes/Intermission"
 
 const CONFIG = {
     type: Phaser.CANVAS,
@@ -11,8 +10,8 @@ const CONFIG = {
         autoCenter: Phaser.Scale.CENTER_BOTH,
         size: Phaser.Scale.FIT
     },
-    // width: 500,  //we might want to manually set a size in the future, for now its auto sizing
-    // height: 450,
+    width: 800,  //we might want to manually set a size in the future, for now its auto sizing
+    height: 800,
     // backgroundColor: '#FACADE',
     // pixelArt: true,
     physics: {
@@ -24,13 +23,12 @@ const CONFIG = {
     fps: {
         target: 60, 
     },
-    scene: [DungeonScene]
+    scene: [DungeonScene, IntermissionScene]
 }
-
-const DUNGEON = new Gen.Dungeon((Math.random()*4294967296).toString(), "WWWWWWWW") //seed: get from dom. gene: get from neural map
 
 export default CONFIG
 
+export const DUNGEON = new Gen.Dungeon((Math.random()*4294967296).toString(), "WWWWWWWW") //seed: get from dom. gene: get from neural map
 
 const GAME = new Phaser.Game(CONFIG)
 
