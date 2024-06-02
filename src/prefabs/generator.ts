@@ -148,6 +148,8 @@ class Room {
         this.createSubrooms()
         this.createCorridors()
         this.fillAllRooms()
+        //deco gem array debug - this needs to stay here so entrances and exits don't spawn on gem spawns.
+        this.decoGemArrayDebug()
 
         //fill the room with gems
 
@@ -156,7 +158,6 @@ class Room {
         //give entrance and exit
         this.entranceExit()
 
-        //this.decoGemArrayDebug()
         console.log("Finished creating the room.")
         console.log(`${this}`) //forces pretty toString.
     }
