@@ -20,18 +20,18 @@ export default class IntermissionScene extends Phaser.Scene{
         this.add.text(400, 400, 'Loading new map', {fontSize: 50}).setOrigin(0.5)
         //console.log('new number: ', (Math.floor(100000 + Math.random() * 900000)))
         DUNGEON.createNewRoom(tempGeneMaker((Math.floor(100000 + Math.random() * 900000))))
-    }
-
-    update(time: number, delta: number): void {
-        //console.log('i am updating')
         var timer = this.time.addEvent({
             delay: 2000,                // ms
             callback: () => {
                 this.scene.start("DungeonScene")
             },
             //args: [],
-            callbackScope: () => {},
+            callbackScope: this,
             loop: false
         });
+    }
+
+    update(time: number, delta: number): void {
+        //console.log('i am updating')
     }
 }
