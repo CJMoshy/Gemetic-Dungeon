@@ -92,6 +92,9 @@ class Room {
     theme: string; //W,E,F,A
     //store all of these as strings for continuity purposes; they will be evaluated in their respective functions.
 
+    entrance:number[]
+    exit:number[]
+
     constructor(seed: number, gene: string/*length 8*/, width: number, height: number) {
         if (gene.length != 8) { throw ("Room:Constructor:Gene not length 8.") }
         if (!this.geneRegex.test(gene)) { throw ("Room: Constructor: Gene does not match gene regex pattern.") }
@@ -112,6 +115,8 @@ class Room {
         this.floorStyle = gene[6]
         this.theme = gene[7]
 
+        this.entrance = []
+        this.exit = []
         console.log(this.gene)
         //second: initialize the empty state of the room.
         this.initMap()
@@ -124,6 +129,9 @@ class Room {
         //fill the room with gems
 
         //fill the room with traps
+
+        //give entrance and exit
+        this.entranceExit()
 
         this.decoGemArrayDebug()
         console.log("Finished creating the room.")
@@ -172,8 +180,6 @@ class Room {
         let floor_d = this.geneDetermine(this.theme, TILECODES.FLOOR_4, TILECODES.FLOOR_1, TILECODES.FLOOR_2, TILECODES.FLOOR_3)
         let trap = this.geneDetermine(this.obstacleType, TILECODES.WATER_SOLO, TILECODES.PIT_SOLO, TILECODES.BRAZIER, TILECODES.SPIKE_1)
         
-            
-        
         //the phaser code itself will take care of adding additional walls on top of tiles adjacent to solid wall tiles.
         for(let row = 0; row < this.rows; row++){
             for(let col = 0; col < this.cols; col++){
@@ -195,6 +201,12 @@ class Room {
                     case "^":
                         appT = trap
                         break;
+                    case "n":
+                        appT = TILECODES.ENTRANCE
+                        break;
+                    case "e":
+                        appT = TILECODES.EXIT
+                        break;
                     default:
                         throw ('huh?')
                 }
@@ -205,6 +217,22 @@ class Room {
         return retArray
     }
 
+    private entranceExit(){
+        let randX:number = Math.floor(this.r.getR(this.cols)), randY:number = Math.floor(this.r.getR(this.rows))
+        while(this.tiles[randY][randX] != ","){
+            randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
+        }
+        this.entrance = [randY, randX]
+        this.tiles[randY][randX] = "n" //n for ntrance
+
+        randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
+        while(this.tiles[randY][randX] != ","){
+            randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
+        }
+        this.exit = [randY, randX]
+        this.tiles[randY][randX] = "e" //e for exit
+
+    }
     private createSubrooms() {
         //here, we create the outlines & fills of the rooms, and connect them with our corridors.
         //Min of 4 subrooms, max of 10.
@@ -349,15 +377,15 @@ class Room {
                 console.log("hellooooo")
                 if (temp[0] < 0 + currRadius + 1) {
                     temp[0] += currRadius + 1 - temp[0]
-                } else if (temp[0] >= this.rows - currRadius - 1) {
-                    temp[0] -= this.rows - currRadius - 1 + temp[0]
+                } else if (temp[0] >= context.rows - currRadius - 1) {
+                    temp[0] -= context.rows - currRadius - 1 + temp[0]
                 }
                 if (temp[1] < 0 + currRadius + 1) {
                     temp[1] += currRadius + 1 - temp[1]
-                } else if (temp[1] >= this.rows - currRadius - 1) {
-                    temp[1] -= this.rows - currRadius - 1 + temp[1]
+                } else if (temp[1] >= context.rows - currRadius - 1) {
+                    temp[1] -= context.rows - currRadius - 1 + temp[1]
                 }
-                if (temp[0] < 0 + currRadius + 1 || temp[0] >= this.rows - currRadius - 1 || temp[1] < 0 + currRadius + 1 || temp[1] >= this.cols - currRadius - 1) {
+                if (temp[0] < 0 + currRadius + 1 || temp[0] >= context.rows - currRadius - 1 || temp[1] < 0 + currRadius + 1 || temp[1] >= context.cols - currRadius - 1) {
                     throw ("fire: index checking failed, room out of bounds.")
                 }
 
