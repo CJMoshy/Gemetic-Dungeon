@@ -8,6 +8,9 @@ import mapData from '../assets/tilemap/tileset-1.json'
 import { DUNGEON } from "../main"
 
 
+
+
+
 export default class DungeonScene extends Phaser.Scene {
 
     player: Phaser.Physics.Arcade.Sprite
@@ -23,8 +26,11 @@ export default class DungeonScene extends Phaser.Scene {
     }
 
     preload() {
-        console.log('in loop' , DUNGEON.getRoomParsed())
+
+        mapData.layers[0].data = DUNGEON.getRoomParsed()
         console.log(mapData.layers[0].data)
+
+
         this.load.image('base-tileset', tileset)
         this.load.tilemapTiledJSON('tilemapJSON', mapData)
 
@@ -34,14 +40,14 @@ export default class DungeonScene extends Phaser.Scene {
 
     create() {
 
-        // const map = this.add.tilemap('tilemapJSON')
-        // const tileset = map.addTilesetImage('dungeon_tileset', 'base-tileset')
-        // const bgLayer = map.createLayer('Background', tileset)
-        // bgLayer.setCollisionByProperty({collides: true})
+        const map = this.add.tilemap('tilemapJSON')
+        const tileset = map.addTilesetImage('dungeon_tileset', 'base-tileset')
+        const bgLayer = map.createLayer('Background', tileset)
+        bgLayer.setCollisionByProperty({collides: true})
 
-        // this.player = new Player(this, 200, 200, 'test', 0)
+        this.player = new Player(this, 200, 200, 'test', 0)
 
-        // this.physics.add.collider(this.player, bgLayer)
+        this.physics.add.collider(this.player, bgLayer)
         
         
     }

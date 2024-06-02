@@ -1,4 +1,4 @@
-export default class Inventory{}
+
 // export default class Inventory{
 
 //     active: any
@@ -12,7 +12,7 @@ export default class Inventory{}
 //         this.isOpen = false
 //     }
 
-//     get(item){
+//     get(item: <GEMTYPE>){
 //         if(this.inventory.has(item))
 //             return this.inventory.get(item)
 //         else{
