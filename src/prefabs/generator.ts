@@ -14,13 +14,13 @@ export const enum TILECODES {
     WATER_UL, WATER_UR, WATER_DR, WATER_DL,
     WATER_D, WATER_U, WATER_L, WATER_R,
 
-    PIT_SOLO, PIT_DLR, PIT_ULR, PIT_UDL, PIT_UDR, 
-    PIT_UL, PIT_UR, PIT_DR, PIT_DL, 
-    PIT_D, PIT_U, PIT_L, PIT_R, 
-    
-    SPIKE_1, SPIKE_2, BRAZIER, 
+    PIT_SOLO, PIT_DLR, PIT_ULR, PIT_UDL, PIT_UDR,
+    PIT_UL, PIT_UR, PIT_DR, PIT_DL,
+    PIT_D, PIT_U, PIT_L, PIT_R,
 
-    ENTRANCE, EXIT, 
+    SPIKE_1, SPIKE_2, BRAZIER,
+
+    ENTRANCE, EXIT,
 
     GEM_W, GEM_E, GEM_F, GEM_A
 }
@@ -44,7 +44,7 @@ export class Dungeon {
         // console.log("dungon: result of hash =", this.seed)
         //tempGene is for randomized testing. remove it for prod
         let tempGene = tempGeneMaker(this.seed)
-        this.currentRoom = new Room(this.seed, /* initialGene*/ tempGene, this.maxW, this.maxH);
+        this.currentRoom = new Room(this.seed, /* tempGene*/ initialGene, this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
         this.currentRoomTilemap = []
         this.currentRoomTilemap = this.currentRoom.parseRoom()
@@ -88,6 +88,10 @@ export class Dungeon {
     public getFloorStyle(): string {
         return this.currentRoom.floorStyle
     }
+    public getGemPositions(): number[][] {
+        if (this.currentRoom.confirmedGems.length == 0) { throw ("current room's gems have not been generated yet.") }
+        return this.currentRoom.confirmedGems
+    }
 }
 
 class Room {
@@ -101,11 +105,12 @@ class Room {
 
     gemCenters: number[][] = [] //accepts ([row, col] format) arrays of coordinates 
     gemEnds: number[][] = [] //accepts ([row, col] format) arrays of coordinates
+    confirmedGems: any[][] = [] // accepts [row, col, element] arrays of int, int, string coord + color
     savedRadii: number[] = [] //accepts integers
     //gemCenters and gemEnds are modified every time a room or corridor is created. They will act as viable places for gems to spawn.
 
     //genetic traits:
-    roomShape: string; //W - ellipse, E - square, F - long rect, A - triangle
+    roomShape: string; //W - ellipse, E - square, F - diamond, A - triangle
     gemSpawnStyle: string;
     obstacleType: string;
     wallDeco: string;
@@ -152,7 +157,7 @@ class Room {
         this.decoGemArrayDebug()
 
         //fill the room with gems
-
+        this.placeAllGems()
         //fill the room with traps
 
         //give entrance and exit
@@ -193,52 +198,7 @@ class Room {
         }
 
     }
-    public parseRoom(): number[] {
-        let retArray: number[] = []
-        //this function turns the dungeon string thing into a tilemap.
-        let solid_wall = this.geneDetermine(this.theme, TILECODES.WALL_W, TILECODES.WALL_E, TILECODES.WALL_F, TILECODES.WALL_A)
-        let hall_tile = TILECODES.FLOOR_1
-        let floor_bg = this.geneDetermine(this.theme, TILECODES.BG_W, TILECODES.BG_E, TILECODES.BG_F, TILECODES.BG_A)
-        
-        let trap = this.geneDetermine(this.obstacleType, TILECODES.WATER_SOLO, TILECODES.PIT_SOLO, TILECODES.BRAZIER, TILECODES.SPIKE_1)
 
-        //the phaser code itself will take care of adding additional walls on top of tiles adjacent to solid wall tiles.
-        for (let row = 0; row < this.rows; row++) {
-            for (let col = 0; col < this.cols; col++) {
-                let appT;
-                switch (this.tiles[row][col]) {
-                    case ".":
-                        appT = solid_wall
-                        break
-                    case "_":
-                        appT = hall_tile + Math.floor(this.r.getR(3))
-                        break
-                    case ",":
-                    case "!":
-                    case "x":
-                        //will need to do more complex later.
-                        //for now, just make it the floor_bg
-                        appT = floor_bg
-                        //renderer will overlay tile bg's in phaser
-                        break
-                    case "^":
-                        appT = trap
-                        break;
-                    case "n":
-                        appT = TILECODES.ENTRANCE
-                        break;
-                    case "e":
-                        appT = TILECODES.EXIT
-                        break;
-                    default:
-                        throw ('huh?')
-                }
-                retArray.push(appT)
-
-            }
-        }
-        return retArray
-    }
 
     private entranceExit() {
         let randX: number = Math.floor(this.r.getR(this.cols)), randY: number = Math.floor(this.r.getR(this.rows))
@@ -806,7 +766,51 @@ class Room {
             i++
         });
     }
+    private placeAllGems() {
+        //ok - first we need to decide which placement method we're using.
+        let gemPlacer = this.geneDetermine(this.gemSpawnStyle, this.placeGemsWater, this.placeGemsEarth, this.placeGemsFire(), this.placeGemsAir())
+        gemPlacer(this)
+    }
+    createGemColor():string{
+        //returns one of four letters based on randomness, weighting away from the current Theme
+        let t = this.theme
+        let lowRoll = this.geneDetermine(t, "W", "E", "F", "A") //15 percent chance of having its own color
+        let regRoll = this.geneDetermine(t, "E", "W", "A", "F") // 20% of having non-opposite color
+        let reg2Roll = this.geneDetermine(t, "A", "F", "E", "W") //20% of having other non-opposite color
+        let highRoll = this.geneDetermine(t, "F", "A", "W", "E") //45% of having opposite color
 
+        let rand = this.r.getR(10)
+        return (rand <= 1.5 ? lowRoll : (rand <= 3.5 ? regRoll : (rand <= 5.5 ? reg2Roll : (highRoll))))
+
+
+    }
+    placeGemsWater(context: Room) {
+        //for this style, we:
+        //weight gems away from the current main theme
+        // place as many gems as possible that fall along or near predetermined diagonal lines.
+        //this code is fairly unoptimized, but whatever. it gets the job done.
+        context.gemCenters.forEach(element => {
+            for (let offX = -99; offX < context.cols; offX += 10) {
+                if (Math.abs(element[0] - (element[1] + offX)) <= 2) {
+                    let gemColor = context.createGemColor()
+                    context.confirmedGems.push([element[0], element[1], gemColor])
+                    //debug only:
+                    //context.tiles[element[0]][element[1]] = "G"
+                }
+            }
+        });
+
+    }
+    placeGemsEarth() {
+        //for this style, we:
+        //
+    }
+    placeGemsFire() {
+
+    }
+    placeGemsAir() {
+
+    }
     private pushRoomGemArray(potentialCenter: number[], currRadius: number) {
         //push center to center array
         this.gemCenters.push(potentialCenter)
@@ -939,6 +943,53 @@ class Room {
         }
         return _str
     }
+    public parseRoom(): number[] {
+        let retArray: number[] = []
+        //this function turns the dungeon string thing into a tilemap.
+        let solid_wall = this.geneDetermine(this.theme, TILECODES.WALL_W, TILECODES.WALL_E, TILECODES.WALL_F, TILECODES.WALL_A)
+        let hall_tile = TILECODES.FLOOR_1
+        let floor_bg = this.geneDetermine(this.theme, TILECODES.BG_W, TILECODES.BG_E, TILECODES.BG_F, TILECODES.BG_A)
+
+        let trap = this.geneDetermine(this.obstacleType, TILECODES.WATER_SOLO, TILECODES.PIT_SOLO, TILECODES.BRAZIER, TILECODES.SPIKE_1)
+
+        //the phaser code itself will take care of adding additional walls on top of tiles adjacent to solid wall tiles.
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
+                let appT;
+                switch (this.tiles[row][col]) {
+                    case ".":
+                        appT = solid_wall
+                        break
+                    case "_":
+                        appT = hall_tile + Math.floor(this.r.getR(3))
+                        break
+                    case ",":
+                    case "!":
+                    case "x":
+                        //will need to do more complex later.
+                        //for now, just make it the floor_bg
+                        appT = floor_bg
+                        //renderer will overlay tile bg's in phaser
+                        break
+                    case "^":
+                        appT = trap
+                        break;
+                    case "n":
+                        appT = TILECODES.ENTRANCE
+                        break;
+                    case "e":
+                        appT = TILECODES.EXIT
+                        break;
+                    default:
+                        throw ('huh?')
+                }
+                retArray.push(appT)
+
+            }
+        }
+        return retArray
+    }
+
 }
 
 
