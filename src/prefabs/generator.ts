@@ -28,8 +28,10 @@ export const enum TILECODES {
 
 export class Dungeon {
     // dungeon base class will:
-    //contain reference to the "active"
+    //contain reference to the "active" room
     //generate and draw a room deterministically based on the seed and gene
+    //have access functions for the various aspects of the current room.
+    //be able to generate a new room based on a gene, while retaining the seed.
 
     private currentRoom: Room;
     private currentRoomTilemap: integer[];
@@ -45,7 +47,7 @@ export class Dungeon {
         // console.log("dungon: result of hash =", this.seed)
         //tempGene is for randomized testing. remove it for prod
         let tempGene = tempGeneMaker(this.seed)
-        this.currentRoom = new Room(this.seed, /* initialGene*/ tempGene, this.maxW, this.maxH);
+        this.currentRoom = new Room(this.seed, initialGene /*tempGene*/, this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
         this.currentRoomTilemap = []
         this.currentRoomTilemap = this.currentRoom.parseRoom()
@@ -67,15 +69,15 @@ export class Dungeon {
     public getCurrentGene(): string {
         return this.currentRoom.gene
     }
+    public getCurrentGems(): number[][] {
+        if (this.currentRoom.confirmedGems.length == 0) { throw ("current room's gems have not been generated yet.") }
+        return this.currentRoom.confirmedGems
+    }
     public getRoom(): object {
         return this.currentRoom
     }
     public getRoomParsed(): integer[] {
         return this.currentRoomTilemap;
-    }
-    public createNewRoom(newGene: string) {
-        this.currentRoom = new Room(this.seed, newGene, this.maxW, this.maxH)
-        this.currentRoomTilemap = this.currentRoom.parseRoom()
     }
     public getObstacleStyle(): string {
         return this.currentRoom.obstacleType
@@ -83,16 +85,16 @@ export class Dungeon {
     public getMainTheme(): string {
         return this.currentRoom.theme
     }
-    public getBackgroundStyle(): string {
-        return this.currentRoom.wallDeco
-    }
     public getFloorStyle(): string {
         return this.currentRoom.floorStyle
     }
-    public getGemPositions(): number[][] {
-        if (this.currentRoom.confirmedGems.length == 0) { throw ("current room's gems have not been generated yet.") }
-        return this.currentRoom.confirmedGems
+    //control functions
+    public createNewRoom(newGene: string) {
+        this.currentRoom = new Room(this.seed, newGene, this.maxW, this.maxH)
+        this.currentRoomTilemap = this.currentRoom.parseRoom()
     }
+
+
 }
 
 class Room {
@@ -160,7 +162,7 @@ class Room {
         //fill the room with gems
         this.placeAllGems()
         //fill the room with traps
-
+        this.placeAllTraps()
         //give entrance and exit
         this.entranceExit()
 
@@ -168,6 +170,7 @@ class Room {
         console.log(`${this}`) //forces pretty toString.
     }
 
+    //room genning
     private initMap() { //called during constructor, do not call from outside.
         //fill our "map" with empty spaces.
         for (let i = 0; i < this.rows; i++) {
@@ -177,26 +180,6 @@ class Room {
             }
         }
         //console.log(`${this}`)
-    }
-   
-
-
-    private entranceExit() {
-        let randX: number = Math.floor(this.r.getR(this.cols)), randY: number = Math.floor(this.r.getR(this.rows))
-        while (this.tiles[randY][randX] != ",") {
-            randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
-        }
-        this.entrance = [randY, randX]
-        this.tiles[randY][randX] = "n" //n for ntrance
-
-        randX = Math.floor(this.r.getR(this.cols))
-        randY = Math.floor(this.r.getR(this.rows))
-        while (this.tiles[randY][randX] != ",") {
-            randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
-        }
-        this.exit = [randY, randX]
-        this.tiles[randY][randX] = "e" //e for exit
-        //console.log("finished placing entrance and exit.")
     }
     private createSubrooms() {
         //here, we create the outlines & fills of the rooms, and connect them with our corridors.
@@ -499,7 +482,6 @@ class Room {
             }
         }
     }
-
     private createCorridors() {
         if (this.connectionType == "W") {
             //no work then! tee hee
@@ -737,7 +719,25 @@ class Room {
                 break;
         }
     }
+    private entranceExit() {
+        let randX: number = Math.floor(this.r.getR(this.cols)), randY: number = Math.floor(this.r.getR(this.rows))
+        while (this.tiles[randY][randX] != ",") {
+            randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
+        }
+        this.entrance = [randY, randX]
+        this.tiles[randY][randX] = "n" //n for ntrance
 
+        randX = Math.floor(this.r.getR(this.cols))
+        randY = Math.floor(this.r.getR(this.rows))
+        while (this.tiles[randY][randX] != ",") {
+            randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
+        }
+        this.exit = [randY, randX]
+        this.tiles[randY][randX] = "e" //e for exit
+        //console.log("finished placing entrance and exit.")
+    }
+
+    //room filling
     private fillAllRooms() {
         let fillFunc = geneDetermine(this.roomShape, this.fillRoomCircle, this.fillRoomRectangle, this.fillRoomDiamond, this.fillRoomTriangle)
         //console.log(this.roomShape)
@@ -747,116 +747,6 @@ class Room {
             i++
         });
     }
-    private placeAllGems() {
-        //ok - first we need to decide which placement method we're using.
-        let gemPlacer = geneDetermine(this.gemSpawnStyle, this.placeGemsWater, this.placeGemsEarth, this.placeGemsFire, this.placeGemsAir)
-        gemPlacer(this)
-    }
-    createGemColor():string{
-        //returns one of four letters based on randomness, weighting away from the current Theme
-        let t = this.theme
-        let lowRoll = geneDetermine(t, "W", "E", "F", "A") //15 percent chance of having its own color
-        let regRoll = geneDetermine(t, "E", "W", "A", "F") // 20% of having non-opposite color
-        let reg2Roll = geneDetermine(t, "A", "F", "E", "W") //20% of having other non-opposite color
-        let highRoll = geneDetermine(t, "F", "A", "W", "E") //45% of having opposite color
-
-        let rand = this.r.getR(10)
-        return (rand <= 1.5 ? lowRoll : (rand <= 3.5 ? regRoll : (rand <= 5.5 ? reg2Roll : (highRoll))))
-
-
-    }
-    placeGemsWater(context: Room) {
-        //for this style, we:
-        //weight gems away from the current main theme
-        // place as many gems as possible that fall along or near predetermined diagonal lines.
-        //this code is fairly unoptimized, but whatever. it gets the job done.
-        context.gemEnds.forEach(element => {
-            for (let offX = -99; offX < context.cols; offX += 10) {
-                if (Math.abs(element[0] - (element[1] + offX)) <= 2) {
-                    let gemColor = context.createGemColor()
-                    context.confirmedGems.push([element[0], element[1], gemColor])
-                    //debug only:
-                    //context.tiles[element[0]][element[1]] = "G"
-                }
-            }
-        });
-
-    }
-    placeGemsEarth(context: Room) {
-        //for this style, we:
-        // place gems at all even-even positions.
-        context.gemEnds.forEach(element => {
-            if(element[0] % 2 == 0 && element[1] % 2 == 0 ){
-                let gemColor = context.createGemColor()
-                context.confirmedGems.push([element[0], element[1], gemColor])
-            }
-        });
-    }
-    placeGemsFire(context: Room) {
-        //for this style, we: 
-        //place a gem at the given spot IF the perlin noise at that spot is large enough.
-        context.gemEnds.forEach(element => {
-            //console.log(context.r.perlin2(element[0]/10, element[1]/10))
-            if(context.r.perlin2(element[0]/10, element[1]/10) > 0.46){ //i like .46 cause its more than .45 but less than .5 idk. .46 babyyyy idk
-                let gemColor = context.createGemColor()
-                context.confirmedGems.push([element[0], element[1], gemColor])
-                //debug only:
-                //context.tiles[element[0]][element[1]] = "G"
-            }
-        });
-
-    }
-    placeGemsAir(context: Room) {
-        //for this style, we: 
-        // randomly choose a number of spots from the list of potential spots.
-        let maxGems = context.gemEnds.length / 2 //the number of total gem positions, divided by 2
-        let minGems = context.gemCenters.length //the number of subrooms (not neccesarily meaning that there will be one gem per room.)
-        let gemCount = Math.ceil(context.r.getR(maxGems - minGems) + minGems)
-        let tempCenters = context.gemCenters
-        for(let i = 0; i < gemCount; i++){
-            let pos = Math.floor(context.r.getR(tempCenters.length))
-            context.confirmedGems.push([tempCenters[pos][0], tempCenters[pos][1], context.createGemColor()])
-            delete tempCenters[pos]
-        }
-    }
-
-    private pushRoomGemArray(potentialCenter: number[], currRadius: number) {
-        //push center to center array
-        this.gemCenters.push(potentialCenter)
-        this.savedRadii.push(currRadius)
-        //push edges to edge array.
-        switch (this.roomShape) {
-            case "W":
-            case "F":
-                //N-S-E-W of circle, works same for diamond.
-                this.gemEnds.push([potentialCenter[0] - currRadius + 1, potentialCenter[1]])
-                this.gemEnds.push([potentialCenter[0] + currRadius - 1, potentialCenter[1]])
-                this.gemEnds.push([potentialCenter[0], potentialCenter[1] + currRadius - 1])
-                this.gemEnds.push([potentialCenter[0], potentialCenter[1] - currRadius + 1])
-                break;
-            case "E":
-                //corners of square: UL, UR, DL, DR
-                this.gemEnds.push([potentialCenter[0] - currRadius + 1, potentialCenter[1] - currRadius + 1])
-                this.gemEnds.push([potentialCenter[0] - currRadius + 1, potentialCenter[1] + currRadius - 1])
-                this.gemEnds.push([potentialCenter[0] + currRadius - 1, potentialCenter[1] - currRadius + 1])
-                this.gemEnds.push([potentialCenter[0] + currRadius - 1, potentialCenter[1] + currRadius - 1])
-                break;
-            case "A":
-                //corners of tri: U, DL, DR
-                this.gemEnds.push([potentialCenter[0] - currRadius + 1, potentialCenter[1]])
-                this.gemEnds.push([potentialCenter[0] + currRadius - 1, potentialCenter[1] - currRadius + 1])
-                this.gemEnds.push([potentialCenter[0] + currRadius - 1, potentialCenter[1] + currRadius - 1])
-        }
-    }
-    private decoGemArrayDebug() {
-        this.gemCenters.forEach(element => {
-            this.tiles[element[0]][element[1]] = "!"
-        });
-        this.gemEnds.forEach(element => {
-            this.tiles[element[0]][element[1]] = "x"
-        });
-    }
-
     private fillRoomCircle(currCenter: number[], currRadius: number, context: Room) {
         //valid center has already been ensured by center creator func
         //fill radius of map around point with floor tiles, circle style.
@@ -935,6 +825,180 @@ class Room {
         //console.log("done with fillroomtriangle")
     }
 
+    //gem functions
+    private placeAllGems() {
+        //ok - first we need to decide which placement method we're using.
+        let gemPlacer = geneDetermine(this.gemSpawnStyle, this.placeGemsWater, this.placeGemsEarth, this.placeGemsFire, this.placeGemsAir)
+        gemPlacer(this)
+    }
+    private createGemColor(): string {
+        //returns one of four letters based on randomness, weighting away from the current Theme
+        let t = this.theme
+        let lowRoll = geneDetermine(t, "W", "E", "F", "A") //15 percent chance of having its own color
+        let regRoll = geneDetermine(t, "E", "W", "A", "F") // 20% of having non-opposite color
+        let reg2Roll = geneDetermine(t, "A", "F", "E", "W") //20% of having other non-opposite color
+        let highRoll = geneDetermine(t, "F", "A", "W", "E") //45% of having opposite color
+
+        let rand = this.r.getR(10)
+        return (rand <= 1.5 ? lowRoll : (rand <= 3.5 ? regRoll : (rand <= 5.5 ? reg2Roll : (highRoll))))
+
+
+    }
+    private placeGemsWater(context: Room) {
+        //for this style, we:
+        //weight gems away from the current main theme
+        // place as many gems as possible that fall along or near predetermined diagonal lines.
+        //this code is fairly unoptimized, but whatever. it gets the job done.
+        context.gemEnds.forEach(element => {
+            for (let offX = -99; offX < context.cols; offX += 10) {
+                if (Math.abs(element[0] - (element[1] + offX)) <= 2) {
+                    let gemColor = context.createGemColor()
+                    context.confirmedGems.push([element[0], element[1], gemColor])
+                    //debug only:
+                    //context.tiles[element[0]][element[1]] = "G"
+                }
+            }
+        });
+
+    }
+    private placeGemsEarth(context: Room) {
+        //for this style, we:
+        // place gems at all even-even positions.
+        context.gemEnds.forEach(element => {
+            if (element[0] % 2 == 0 && element[1] % 2 == 0) {
+                let gemColor = context.createGemColor()
+                context.confirmedGems.push([element[0], element[1], gemColor])
+            }
+        });
+    }
+    private placeGemsFire(context: Room) {
+        //for this style, we: 
+        //place a gem at the given spot IF the perlin noise at that spot is large enough.
+        context.gemEnds.forEach(element => {
+            //console.log(context.r.perlin2(element[0]/10, element[1]/10))
+            if (context.r.perlin2(element[0] / 10, element[1] / 10) > 0.44) { //updated to .4 since perlin noise was returned to -1, 1 range.
+                let gemColor = context.createGemColor()
+                context.confirmedGems.push([element[0], element[1], gemColor])
+                //debug only:
+                //context.tiles[element[0]][element[1]] = "G"
+            }
+        });
+
+    }
+    private placeGemsAir(context: Room) {
+        //for this style, we: 
+        // randomly choose a number of spots from the list of potential spots.
+        let maxGems = context.gemEnds.length / 2 //the number of total gem positions, divided by 2
+        let minGems = context.gemCenters.length - 1 //the number of subrooms (not neccesarily meaning that there will be one gem per room.)
+        let gemCount = Math.ceil(context.r.getR(maxGems - minGems) + minGems)
+        let tempCenters = JSON.parse(JSON.stringify(context.gemEnds))
+        console.log(tempCenters)
+        for (let i = 0; i < gemCount; i++) {
+            let pos = Math.floor(context.r.getR(tempCenters.length - 1))
+            context.confirmedGems.push([tempCenters[pos][0], tempCenters[pos][1], context.createGemColor()])
+            tempCenters.splice(pos, 1)
+            console.log("after the delete")
+            console.log(tempCenters)
+        }
+    }
+
+    //trap functions
+    private placeAllTraps(){
+        let trapPlacer = geneDetermine(this.obstacleType, this.placePuddles, this.placePits, this.placeBraziers, this.placeSpikes)
+        trapPlacer(this)
+    }
+    private placePuddles(context:Room){
+        //for this style, we:
+        // place a puddle at the given spot if the perlin noise is below a certain level AND it's near-ish the center of the room.
+       
+        //loop thru gem centers and radii
+        for(let i = 0; i < context.gemCenters.length; i++ ){
+            let currCenter = context.gemCenters[i]
+            let currRadius = context.savedRadii[i]
+            //loop thru the nearby.
+            for(let currRow = Math.floor(currCenter[0] - currRadius/2); currRow < currCenter[0] + currRadius/2; currRow++){
+                for(let currCol = Math.floor(currCenter[1] - currRadius/2); currCol < currCenter[1] + currRadius/2; currCol++){
+                    console.log(context.r.perlin2(currRow/10, currCol/10))
+                    if(context.r.perlin2(currRow/10, currCol/10) <= -0.3){
+                        context.tiles[currRow][currCol] = "^"
+                    }
+                }
+            }
+        }
+    }
+    private placePits(context:Room){
+        //for now, just use same puddle logic.
+        context.placePuddles(context)
+    }
+    private placeBraziers(context:Room){
+        //pattern style in the center of the room.
+        for(let i = 0; i < context.gemCenters.length; i++ ){
+            let currCenter = context.gemCenters[i]
+            let currRadius = context.savedRadii[i]
+            //loop thru the nearby.
+            for(let currRow = Math.floor(currCenter[0] - currRadius/2); currRow < currCenter[0] + currRadius/2; currRow++){
+                for(let currCol = Math.floor(currCenter[1] - currRadius/2); currCol < currCenter[1] + currRadius/2; currCol++){
+                  if (currCol != currCenter[1] && //not the very center row
+                    currCol % 2 != (currCenter[1] % 2) // offset off the center row.
+
+                  ){
+                    context.tiles[currRow][currCol] = "^"
+                  }
+
+                }
+            }
+        }
+    }
+    private placeSpikes(context:Room){
+        // for each position, 0.1 chance to place spike there.
+        for(let currRow = 0; currRow < context.rows; currRow++){
+            for(let currCol = 0; currCol < context.cols; currCol++){
+                if(context.tiles[currRow][currCol] == "," && context.r.getR() <= 0.1){
+                    context.tiles[currRow][currCol] = "^"
+                }
+            }
+        }
+    }
+
+    //debug funcs
+    private pushRoomGemArray(potentialCenter: number[], currRadius: number) {
+        //push center to center array
+        this.gemCenters.push(potentialCenter)
+        this.savedRadii.push(currRadius)
+        //push edges to edge array.
+        switch (this.roomShape) {
+            case "W":
+            case "F":
+                //N-S-E-W of circle, works same for diamond.
+                this.gemEnds.push([potentialCenter[0] - currRadius + 1, potentialCenter[1]])
+                this.gemEnds.push([potentialCenter[0] + currRadius - 1, potentialCenter[1]])
+                this.gemEnds.push([potentialCenter[0], potentialCenter[1] + currRadius - 1])
+                this.gemEnds.push([potentialCenter[0], potentialCenter[1] - currRadius + 1])
+                break;
+            case "E":
+                //corners of square: UL, UR, DL, DR
+                this.gemEnds.push([potentialCenter[0] - currRadius + 1, potentialCenter[1] - currRadius + 1])
+                this.gemEnds.push([potentialCenter[0] - currRadius + 1, potentialCenter[1] + currRadius - 1])
+                this.gemEnds.push([potentialCenter[0] + currRadius - 1, potentialCenter[1] - currRadius + 1])
+                this.gemEnds.push([potentialCenter[0] + currRadius - 1, potentialCenter[1] + currRadius - 1])
+                break;
+            case "A":
+                //corners of tri: U, DL, DR
+                this.gemEnds.push([potentialCenter[0] - currRadius + 1, potentialCenter[1]])
+                this.gemEnds.push([potentialCenter[0] + currRadius - 1, potentialCenter[1] - currRadius + 1])
+                this.gemEnds.push([potentialCenter[0] + currRadius - 1, potentialCenter[1] + currRadius - 1])
+        }
+    }
+    private decoGemArrayDebug() {
+        this.gemCenters.forEach(element => {
+            this.tiles[element[0]][element[1]] = "!"
+        });
+        this.gemEnds.forEach(element => {
+            this.tiles[element[0]][element[1]] = "x"
+        });
+    }
+
+    //access funcs
     public toString(): string {
         // thank you stackoverflow for tostring override help
         //https://stackoverflow.com/questions/35361482/typescript-override-tostring
@@ -1001,23 +1065,24 @@ class Room {
 
 }
 
+//this class exists so I can control a room's RNG, isolated from Math.random. Also contains an instance of the noisejs package.
+class SubRandom { 
 
-class SubRandom { //this class exists so I can control a room's RNG, isolated from Math.random. Also contains an instance of the noisejs package.
-    
     seed = 0;
-    private myNoise:Noise
-    perlin2 = function(row:number,col:number):number{ return -2}
+    private myNoise: Noise
+    perlin2 = function (row: number, col: number): number { return -2 }
+
     constructor(_seed: number) {
         this.seed = _seed;
         if (this.seed === 0 || this.seed == undefined) { this.seed = Math.random() }
         //console.log("SubRandom initialized seed as: ", this.seed)
         this.myNoise = new NoiseNS.Noise(this.seed)
-        this.perlin2 = function (row:number, col:number){
-            return (this.myNoise.perlin2(col, row) + 1) / 2 //perlin2 returns a range between -1 and 1, we want it to return between 0 and 1. so we just add 1 and squish. probably lossy. idk and idc
+        this.perlin2 = function (row: number, col: number):number {
+            return this.myNoise.perlin2(col, row) //perlin2 returns a range between -1 and 1
         }
-        
+
     }
-    getR(max: number = 1) {
+    public getR(max: number = 1) {
         //console.log("inside getR, seed = ", this.seed)
         let rand = SubRandom.sfc32(this.seed, this.seed << 5, this.seed >> 7, this.seed << 13)
         this.seed = (rand * 4294967296)
@@ -1025,11 +1090,11 @@ class SubRandom { //this class exists so I can control a room's RNG, isolated fr
         //console.log("getR: Returning ", rand*max )
         return rand * max
     }
-    //This is the "simple fast counter 32" randomness function, taken from
-    //https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
-    //and is part of the practrand testing suite.
-    //returns [0, 1], noninclusive.
     private static sfc32(a: integer, b: integer, c: integer, d: integer) {
+        //This is the "simple fast counter 32" randomness function, taken from
+        //https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
+        //and is part of the practrand testing suite.
+        //returns [0, 1).
         //console.log("inside sfc32", a, b, c, d)
         a |= 0; b |= 0; c |= 0; d |= 0;
         let t = (a + b | 0) + d | 0;
@@ -1042,10 +1107,12 @@ class SubRandom { //this class exists so I can control a room's RNG, isolated fr
     }
     public setSeed(_s: number) {
         this.seed = _s
+        this.myNoise.seed(_s)
     }
 
 }
 
+//exported helper funcs
 export function tempGeneMaker(seed: number): string {
     let retVal = ""
     let myRand = new SubRandom(seed)
@@ -1070,7 +1137,6 @@ export function tempGeneMaker(seed: number): string {
 
     return retVal
 }
-
 export function geneDetermine(input: string, waterOpt: any, earthOpt: any, fireOpt: any, airOpt: any) {
     //geneDetermine is a simple helper function so i dont have to write a switch statement every time i wanna plug a gene in/output
     switch (input) {
