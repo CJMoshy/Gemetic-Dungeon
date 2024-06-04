@@ -892,13 +892,13 @@ class Room {
         let minGems = context.gemCenters.length - 1 //the number of subrooms (not neccesarily meaning that there will be one gem per room.)
         let gemCount = Math.ceil(context.r.getR(maxGems - minGems) + minGems)
         let tempCenters = JSON.parse(JSON.stringify(context.gemEnds))
-        console.log(tempCenters)
+        //console.log(tempCenters)
         for (let i = 0; i < gemCount; i++) {
             let pos = Math.floor(context.r.getR(tempCenters.length - 1))
             context.confirmedGems.push([tempCenters[pos][0], tempCenters[pos][1], context.createGemColor()])
             tempCenters.splice(pos, 1)
-            console.log("after the delete")
-            console.log(tempCenters)
+            //console.log("after the delete")
+            //console.log(tempCenters)
         }
     }
 
@@ -918,7 +918,7 @@ class Room {
             //loop thru the nearby.
             for(let currRow = Math.floor(currCenter[0] - currRadius/2); currRow < currCenter[0] + currRadius/2; currRow++){
                 for(let currCol = Math.floor(currCenter[1] - currRadius/2); currCol < currCenter[1] + currRadius/2; currCol++){
-                    console.log(context.r.perlin2(currRow/10, currCol/10))
+                    //console.log(context.r.perlin2(currRow/10, currCol/10))
                     if(context.r.perlin2(currRow/10, currCol/10) <= -0.3){
                         context.tiles[currRow][currCol] = "^"
                     }
@@ -936,11 +936,11 @@ class Room {
             let currCenter = context.gemCenters[i]
             let currRadius = context.savedRadii[i]
             //loop thru the nearby.
-            for(let currRow = Math.floor(currCenter[0] - currRadius/2); currRow < currCenter[0] + currRadius/2; currRow++){
+            for(let currRow = Math.floor(currCenter[0] - currRadius/2); currRow < currCenter[0] + currRadius/3; currRow++){
                 for(let currCol = Math.floor(currCenter[1] - currRadius/2); currCol < currCenter[1] + currRadius/2; currCol++){
                   if (currCol != currCenter[1] && //not the very center row
-                    currCol % 2 != (currCenter[1] % 2) // offset off the center row.
-
+                    currCol % 2 != (currCenter[1] % 2) &&// offset off the center row.
+                    context.r.getR() < 0.8 //random isn't high
                   ){
                     context.tiles[currRow][currCol] = "^"
                   }
@@ -953,7 +953,7 @@ class Room {
         // for each position, 0.1 chance to place spike there.
         for(let currRow = 0; currRow < context.rows; currRow++){
             for(let currCol = 0; currCol < context.cols; currCol++){
-                if(context.tiles[currRow][currCol] == "," && context.r.getR() <= 0.1){
+                if(context.tiles[currRow][currCol] == "," && context.r.getR() <= 0.05){
                     context.tiles[currRow][currCol] = "^"
                 }
             }
