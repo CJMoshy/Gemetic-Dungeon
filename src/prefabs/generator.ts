@@ -35,6 +35,7 @@ export class Dungeon {
 
     private currentRoom: Room;
     private currentRoomTilemap: integer[];
+    private currentRoomOverlay: integer[];
 
     //max width and height defaults:
     private maxW = 100
@@ -108,7 +109,7 @@ class Room {
 
     gemCenters: number[][] = [] //accepts ([row, col] format) arrays of coordinates 
     gemEnds: number[][] = [] //accepts ([row, col] format) arrays of coordinates
-    confirmedGems: any[][] = [] // accepts [row, col, element] arrays of int, int, string coord + color
+    confirmedGems: any[][] = [] // accepts [row, col, color] arrays of int, int, string coord + color
     savedRadii: number[] = [] //accepts integers
     //gemCenters and gemEnds are modified every time a room or corridor is created. They will act as viable places for gems to spawn.
 
@@ -1062,6 +1063,7 @@ class Room {
         }
         return retArray
     }
+   
 
 }
 
