@@ -2,7 +2,7 @@ import * as XXH from "../lib/xxhash.min.js";
 var NoiseNS = require("noisejs")
 
 export const enum TILECODES {
-    WALL_W, WALL_E, WALL_F, WALL_A,
+    WALL_NULL, WALL_W, WALL_E, WALL_F, WALL_A,
 
     WALL_U, WALL_D, WALL_L, WALL_R,
     WALL_UL, WALL_UR, WALL_ULR, WALL_DL, WALL_DR, WALL_DLR, WALL_UDL, WALL_UDR,
@@ -11,11 +11,11 @@ export const enum TILECODES {
     FLOOR_1T, FLOOR_2T, FLOOR_3T, FLOOR_4T,
     BG_W, BG_E, BG_F, BG_A,
 
-    WATER_SOLO, WATER_DLR, WATER_ULR, WATER_UDL, WATER_UDR,
+    WATER_TILE, WATER_DLR, WATER_ULR, WATER_UDL, WATER_UDR,
     WATER_UL, WATER_UR, WATER_DR, WATER_DL,
     WATER_D, WATER_U, WATER_L, WATER_R,
 
-    PIT_SOLO, PIT_DLR, PIT_ULR, PIT_UDL, PIT_UDR,
+    PIT_TILE, PIT_DLR, PIT_ULR, PIT_UDL, PIT_UDR,
     PIT_UL, PIT_UR, PIT_DR, PIT_DL,
     PIT_D, PIT_U, PIT_L, PIT_R,
 
@@ -47,7 +47,7 @@ export class Dungeon {
         // console.log("dungon: result of hash =", this.seed)
         //tempGene is for randomized testing. remove it for prod
         let tempGene = tempGeneMaker(this.seed)
-        this.currentRoom = new Room(this.seed, initialGene /*tempGene*/, this.maxW, this.maxH);
+        this.currentRoom = new Room(this.seed, /*initialGene*/ tempGene, this.maxW, this.maxH);
         console.log("Finished Initializing Dungeon!")
         this.currentRoomTilemap = []
         this.currentRoomTilemap = this.currentRoom.parseRoom()
@@ -1023,7 +1023,7 @@ class Room {
         let hall_tile = TILECODES.FLOOR_1
         let floor_bg = geneDetermine(this.theme, TILECODES.BG_W, TILECODES.BG_E, TILECODES.BG_F, TILECODES.BG_A)
 
-        let trap = geneDetermine(this.obstacleType, TILECODES.WATER_SOLO, TILECODES.PIT_SOLO, TILECODES.BRAZIER, TILECODES.SPIKE_1)
+        let trap = geneDetermine(this.obstacleType, TILECODES.WATER_TILE, TILECODES.PIT_TILE, TILECODES.BRAZIER, TILECODES.SPIKE_1)
 
         //the phaser code itself will take care of adding additional walls on top of tiles adjacent to solid wall tiles.
         for (let row = 0; row < this.rows; row++) {

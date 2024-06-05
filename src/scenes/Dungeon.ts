@@ -1,9 +1,11 @@
 import Phaser from "phaser"
 import Player from "../prefabs/Player"
 
-import test from '../assets/img/gems/powerup-blue.png' //this will become player char
-import tileset from '../assets/tilemap/base_tileset.png'
-import mapData from '../assets/tilemap/tileset-1.json'
+import test from '../assets/img/player-placeholder.png' //this will become player char
+//import tileset from '../assets/tilemap/base_tileset.png'
+import tileset from '../assets/tilemap/tile4-Sheet.png'
+//import mapData from '../assets/tilemap/tileset-1.json'
+import mapData from '../assets/tilemap/tile4-Sheet.json'
 
 import { DUNGEON } from "../main"
 import { TILECODES } from "../prefabs/generator"
@@ -19,7 +21,7 @@ export default class DungeonScene extends Phaser.Scene {
     constructor() {
         super({ key: 'DungeonScene' })
 
-        this.TILESIZEMULTIPLIER = 8
+        this.TILESIZEMULTIPLIER = 64
     }
 
     init() {}
@@ -49,8 +51,15 @@ export default class DungeonScene extends Phaser.Scene {
         console.log(this.exit.x, this.exit.y)
         console.log(TILECODES.EXIT)
 
+       
+
         //player
         this.player = new Player(this, spawn.x * this.TILESIZEMULTIPLIER, spawn.y * this.TILESIZEMULTIPLIER, 'test', 0)
+
+
+         //camera
+         this.cameras.main.startFollow(this.player, false, 0.5, 0.5, 0, 0) 
+
 
         //collides with walls, traps , TODO: json parse
         //this.physics.add.collider(this.player, bgLayer)
@@ -61,7 +70,7 @@ export default class DungeonScene extends Phaser.Scene {
     update(time: number, delta: number): void {
         
         //this is temporary until we have biger tiles and we can refine exit sizes
-        if(Math.round(this.player.x) >= (this.exit.x * this.TILESIZEMULTIPLIER) - 10 && Math.round(this.player.x) <= (this.exit.x * this.TILESIZEMULTIPLIER) + 10 && this.player.y >= (this.exit.y * this.TILESIZEMULTIPLIER) - 10 && this.player.y <= (this.exit.y * this.TILESIZEMULTIPLIER) + 10 ){
+        if(Math.round(this.player.x) >= (this.exit.x * this.TILESIZEMULTIPLIER) - 32 && Math.round(this.player.x) <= (this.exit.x * this.TILESIZEMULTIPLIER) + 32 && this.player.y >= (this.exit.y * this.TILESIZEMULTIPLIER) - 32 && this.player.y <= (this.exit.y * this.TILESIZEMULTIPLIER) + 32 ){
             //console.log('exit time')
             this.scene.start('IntermissionScene')
         }

@@ -19,7 +19,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 
         this.keys = scene.input.keyboard?.createCursorKeys()
-        this.velocity = 100
+        this.velocity = 250
         
         //todo collisions with gems
 

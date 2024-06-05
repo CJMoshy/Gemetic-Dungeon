@@ -10,8 +10,8 @@ const CONFIG = {
         autoCenter: Phaser.Scale.CENTER_BOTH,
         size: Phaser.Scale.FIT
     },
-    width: 800,  //we might want to manually set a size in the future, for now its auto sizing
-    height: 800,
+    width: 1280,  //we might want to manually set a size in the future, for now its auto sizing
+    height: 720,
     // backgroundColor: '#FACADE',
     // pixelArt: true,
     physics: {
@@ -23,6 +23,7 @@ const CONFIG = {
     fps: {
         target: 60, 
     },
+    zoom:1,
     scene: [DungeonScene, IntermissionScene]
 }
 
