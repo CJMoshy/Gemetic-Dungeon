@@ -43,7 +43,7 @@ export default class DungeonScene extends Phaser.Scene {
         const map = this.add.tilemap('tilemapJSON')
         const tileset = map.addTilesetImage('dungeon_tileset', 'base-tileset')
         const bgLayer = map.createLayer('Background', tileset)
-        //bgLayer.setCollisionByProperty({collides: true})
+        bgLayer.setCollisionByProperty({collides: true})
         const spawn = bgLayer.findTile( (tile) => tile.properties.spawn === true)
         this.exit = bgLayer.findTile( (tile) => tile.properties.exit === true)
         
@@ -62,7 +62,7 @@ export default class DungeonScene extends Phaser.Scene {
 
 
         //collides with walls, traps , TODO: json parse
-        //this.physics.add.collider(this.player, bgLayer)
+        this.physics.add.collider(this.player, bgLayer)
 
         
     }
