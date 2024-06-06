@@ -58,6 +58,8 @@ export default class DungeonScene extends Phaser.Scene {
         const tileset = map.addTilesetImage('dungeon_tileset', 'base-tileset')
         const bgLayer = map.createLayer('Background', tileset)
         const decoLayer = map.createBlankLayer("Decoration", tileset) //create the empty overlay layer
+        const wallDecoLayer = map.createBlankLayer("WallDeco", tileset) //create the empty overlay layer for wall deco
+        const wallDecoLayer2 = map.createBlankLayer("WallDeco2", tileset) //create the empty overlay layer for wall deco THIS IS FOR MULTI LAYERING
         bgLayer.setCollisionByProperty({ collides: true })
         const spawn = bgLayer.findTile((tile) => tile.properties.spawn === true)
         this.exit = bgLayer.findTile((tile) => tile.properties.exit === true)
@@ -143,7 +145,7 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
             }
 
             //do floor v wall checking here.
-            checkVsWall(_tile)
+            checkVsWall(_tile, map)
 
         }
         else if (puddles.includes(_tile.index)) {
@@ -159,7 +161,10 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
 
 }
 
-function checkVsWall(_tile: Phaser.Tilemaps.Tile): integer {
+function checkVsWall(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap): integer {
+    if(walls.includes(map.getTileAt(_tile.x, _tile.y - 1, false, "Background").index)){
+        map.putTileAt(TILECODES.WALL_U, _tile.x, _tile.y, false, "WallDeco")
+    }
     return 0b0000
 }
 function checkVsPuddle(_tile: Phaser.Tilemaps.Tile): integer {
