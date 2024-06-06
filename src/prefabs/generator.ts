@@ -915,7 +915,7 @@ class Room {
         //loop thru gem centers and radii
         for(let i = 0; i < context.gemCenters.length; i++ ){
             let currCenter = context.gemCenters[i]
-            let currRadius = context.savedRadii[i]
+            let currRadius = context.roomShape != "A" ? context.savedRadii[i] : context.savedRadii[i]/2
             //loop thru the nearby.
             for(let currRow = Math.floor(currCenter[0] - currRadius/2); currRow < currCenter[0] + currRadius/2; currRow++){
                 for(let currCol = Math.floor(currCenter[1] - currRadius/2); currCol < currCenter[1] + currRadius/2; currCol++){
@@ -941,7 +941,7 @@ class Room {
                 for(let currCol = Math.floor(currCenter[1] - currRadius/2); currCol < currCenter[1] + currRadius/2; currCol++){
                   if (currCol != currCenter[1] && //not the very center row
                     currCol % 2 != (currCenter[1] % 2) &&// offset off the center row.
-                    context.r.getR() < 0.8 //random isn't high
+                    context.r.getR() < 0.4 //random isn't high
                   ){
                     context.tiles[currRow][currCol] = "^"
                   }

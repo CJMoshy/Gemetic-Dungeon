@@ -16,6 +16,7 @@ import { TILECODES } from "../prefabs/generator"
 const walls = [TILECODES.WALL_W, TILECODES.WALL_E, TILECODES.WALL_F, TILECODES.WALL_A]
 const hallways = [TILECODES.FLOOR_1, TILECODES.FLOOR_2, TILECODES.FLOOR_3, TILECODES.FLOOR_4]
 const bgFloors = [TILECODES.BG_W, TILECODES.BG_E, TILECODES.BG_F, TILECODES.BG_A]
+const transFloors = [TILECODES.FLOOR_1T, TILECODES.FLOOR_2T, TILECODES.FLOOR_3T, TILECODES.FLOOR_4T]
 const puddles = [TILECODES.WATER_TILE, TILECODES.WATER_DLR, TILECODES.WATER_ULR, TILECODES.WATER_UDL, TILECODES.WATER_UDR,
 TILECODES.WATER_UL, TILECODES.WATER_UR, TILECODES.WATER_DR, TILECODES.WATER_DL,
 TILECODES.WATER_D, TILECODES.WATER_U, TILECODES.WATER_L, TILECODES.WATER_R]
@@ -112,15 +113,33 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
         //pit tiles vs pit tiles
 
         let doDeco = false
-        if(walls.includes(_tile.index)){ //add a variation of wall_null
+        if (walls.includes(_tile.index)) { //add a variation of wall_null
             map.putTileAt(TILECODES.WALL_NULL, _tile.x, _tile.y, true, "Decoration")
-            let c = map.getTileAt(_tile.x, _tile.y, true, "Decoration").setAlpha(Math.abs(overlayNoise.perlin2(_tile.x/10, _tile.y/10)))
+            let c = map.getTileAt(_tile.x, _tile.y, true, "Decoration").setAlpha(Math.abs(overlayNoise.perlin2(_tile.x / 10, _tile.y / 10)) / 2 + 0.5)
         }
         if (hallways.includes(_tile.index) || (doDeco = bgFloors.includes(_tile.index))) {
             if (doDeco) {
                 console.log("in doDeco")
                 //do transparent tile overlay here for regular floor tiles.
-                map.putTileAt(TILECODES.FLOOR_1T, _tile.x, _tile.y, true, "Decoration")
+                console.log("floor type:", DUNGEON.getFloorStyle())
+                switch (DUNGEON.getFloorStyle()) {
+                    case "W": //water: perlin flooring.
+                        let indde = Math.floor(Math.abs(overlayNoise.perlin2(_tile.x / 10, _tile.y / 10)) * transFloors.length)
+                        map.putTileAt(transFloors[indde], _tile.x, _tile.y, true, "Decoration")
+                        break;
+                    case "E": //earth: diagonal
+                        let inddd = (_tile.x + _tile.y) % 4
+                        map.putTileAt(transFloors[inddd], _tile.x, _tile.y, true, "Decoration")
+                        break;
+                    case "F": //fire: simple random flooring.
+                        map.putTileAt(transFloors[Math.floor(Math.random() * transFloors.length)], _tile.x, _tile.y, true, "Decoration")
+                        break;
+                    case "A": //air: tiles
+                        let group1 = (Math.floor(((_tile.x) % 8) / 2) + Math.floor(((_tile.y) % 8) / 2)) % 4
+                        map.putTileAt(transFloors[group1], _tile.x, _tile.y, true, "Decoration")
+
+
+                }
             }
 
             //do floor v wall checking here.
@@ -134,7 +153,7 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
         }
 
     }
-    
+
     map.forEachTile(convertToOverlay, context, 0, 0, 100, 100, null, "Background") //search each bg tile, and call the cb func.
 
 
