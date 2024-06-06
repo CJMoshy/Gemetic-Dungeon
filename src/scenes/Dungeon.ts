@@ -119,9 +119,9 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
         }
         if (hallways.includes(_tile.index) || (doDeco = bgFloors.includes(_tile.index))) {
             if (doDeco) {
-                console.log("in doDeco")
+                //console.log("in doDeco")
                 //do transparent tile overlay here for regular floor tiles.
-                console.log("floor type:", DUNGEON.getFloorStyle())
+                //console.log("floor type:", DUNGEON.getFloorStyle())
                 switch (DUNGEON.getFloorStyle()) {
                     case "W": //water: perlin flooring.
                         let indde = Math.floor(Math.abs(overlayNoise.perlin2(_tile.x / 10, _tile.y / 10)) * transFloors.length)
