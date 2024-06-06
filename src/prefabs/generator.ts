@@ -377,7 +377,7 @@ class Room {
         let potentialCenter: number[] = [-1, -1];
         let currRadius = 0;
         let nextRadius = 0;
-        let distanceBetween = Math.floor(geneDetermine(context.connectionType, subroomRadius * 2 - 1, subroomRadius * 2.5, subroomRadius * 3, subroomRadius * 3))
+        let distanceBetween = Math.floor(geneDetermine(context.connectionType, subroomRadius * 2 - 2, subroomRadius * 2.5, subroomRadius * 3, subroomRadius * 3))
         //console.log("distanceBetween: ", distanceBetween)
         //console.log("subroomRadius:", subroomRadius)
         //style 3: earth *used to be fire
