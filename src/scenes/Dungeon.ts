@@ -17,6 +17,7 @@ const walls = [TILECODES.WALL_W, TILECODES.WALL_E, TILECODES.WALL_F, TILECODES.W
 const hallways = [TILECODES.FLOOR_1, TILECODES.FLOOR_2, TILECODES.FLOOR_3, TILECODES.FLOOR_4]
 const bgFloors = [TILECODES.BG_W, TILECODES.BG_E, TILECODES.BG_F, TILECODES.BG_A]
 const transFloors = [TILECODES.FLOOR_1T, TILECODES.FLOOR_2T, TILECODES.FLOOR_3T, TILECODES.FLOOR_4T]
+const specialFloors = [TILECODES.SPIKE_1, TILECODES.SPIKE_2, TILECODES.BRAZIER, TILECODES.ENTRANCE, TILECODES.EXIT]
 const puddles = [TILECODES.WATER_TILE, TILECODES.WATER_DLR, TILECODES.WATER_ULR, TILECODES.WATER_UDL, TILECODES.WATER_UDR,
 TILECODES.WATER_UL, TILECODES.WATER_UR, TILECODES.WATER_DR, TILECODES.WATER_DL,
 TILECODES.WATER_D, TILECODES.WATER_U, TILECODES.WATER_L, TILECODES.WATER_R]
@@ -119,7 +120,7 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
             map.putTileAt(TILECODES.WALL_NULL, _tile.x, _tile.y, true, "Decoration")
             let c = map.getTileAt(_tile.x, _tile.y, true, "Decoration").setAlpha(Math.abs(overlayNoise.perlin2(_tile.x / 10, _tile.y / 10)) / 2 + 0.5)
         }
-        if (hallways.includes(_tile.index) || (doDeco = bgFloors.includes(_tile.index))) {
+        if (hallways.includes(_tile.index) || (doDeco = (bgFloors.includes(_tile.index))) || specialFloors.includes(_tile.index)) {
             if (doDeco) {
                 //console.log("in doDeco")
                 //do transparent tile overlay here for regular floor tiles.
@@ -162,14 +163,22 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
 }
 
 function checkVsWall(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap) {
-    let code = getTileCode(_tile, walls)
+    let code = getTileCode(_tile, walls, map)
+    if (code == -1) { return }
+    map.putTileAt(FLOOR_VS_WALL[code], _tile.x, _tile.y, false, "WallDeco")
+    if (code == 3) {
+        map.putTileAt(TILECODES.WALL_D, _tile.x, _tile.y, false, "WallDeco2")
+    }
+    else if (code == 12){
+        map.putTileAt(TILECODES.WALL_R, _tile.x, _tile.y,false, "WallDeco2")
+    }
 }
 function checkVsPuddle(_tile: Phaser.Tilemaps.Tile) {
 }
 function checkVsPit(_tile: Phaser.Tilemaps.Tile) {
 }
 
-const FLOOR_VS_WALL =[ //the tilecode of overlay wall tiles to place when comparing a floor tile to a wall tile.
+const FLOOR_VS_WALL = [ //the tilecode of overlay wall tiles to place when comparing a floor tile to a wall tile.
     -1, // NO ADJACENT WALLS.
     TILECODES.WALL_U, //1 up
     TILECODES.WALL_D,  //2 down
@@ -185,9 +194,21 @@ const FLOOR_VS_WALL =[ //the tilecode of overlay wall tiles to place when compar
     TILECODES.WALL_L,  //12 left and right  //also place c4
     TILECODES.WALL_ULR,  //13 up left and right
     TILECODES.WALL_DLR,  //14 down left and right 
-    TILECODES.WALL_NULL,  //15 surrounded just make it solid wall -- shouldn't exist? i think? idk.
+    -1,  //15 surrounded just make it solid wall -- shouldn't exist? i think? idk.
 ]
 
-function getTileCode(_tile:Phaser.Tilemaps.Tile, target:number[]){
+function gridCheck(xpos: number, ypos: number, target: number[], map: Phaser.Tilemaps.Tilemap) {
+    if (ypos < 0 || ypos >= map.height || xpos < 0 || xpos >= map.width) { return 0 }
 
+    return target.includes(map.getTileAt(xpos, ypos, true, "Background").index) ? 1 : 0
+}
+
+function getTileCode(_tile: Phaser.Tilemaps.Tile, target: number[], map: Phaser.Tilemaps.Tilemap): number {
+    let nb = gridCheck(_tile.x, _tile.y - 1, target, map) << 0 //1
+    let sb = gridCheck(_tile.x, _tile.y + 1, target, map) << 1 //2
+    let eb = gridCheck(_tile.x + 1, _tile.y, target, map) << 2 //4
+    let wb = gridCheck(_tile.x - 1, _tile.y, target, map) << 3 //8
+    let retVal = nb + sb + eb + wb
+    //console.log(retVal)
+    return retVal
 }
