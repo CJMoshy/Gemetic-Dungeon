@@ -15,8 +15,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
         scene.add.existing(this)
         scene.physics.add.existing(this)
-        //scene.events.on('update', this.update, this)
 
+        // this.setOrigin(0.5,0.5)
 
         this.keys = scene.input.keyboard?.createCursorKeys()
         this.velocity = 250
@@ -57,5 +57,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     //collides with gems
-    handleCollision(){}
+    addItemToInventory(type: string, ammount: number){
+        this.inventory.add(type, ammount)
+    }
 }

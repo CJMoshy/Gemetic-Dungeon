@@ -1,27 +1,25 @@
-import Gem from "../prefabs/Gem"
-
 export default class Inventory{
 
     active: any
-    inventory: Map<any | Phaser.GameObjects.Sprite, number> | undefined
+    inventory: Map<string, number> | undefined
     isOpen: boolean
 
-    constructor(existing_inv: Map<any | Phaser.GameObjects.Sprite, number> | undefined){
+    constructor(existing_inv: Map<string, number> | undefined){
         this.active = []
         this.inventory = undefined
         existing_inv === undefined ? this.inventory = new Map() : this.inventory = new Map(existing_inv)
         this.isOpen = false
     }
 
-    get(item: Gem): number{
+    get(item: string): boolean | number{
         if(this.inventory.has(item))
             return this.inventory.get(item)
         else{
-            return 0
+            return false
         }
     }
 
-    add(item: Gem, ammount: number): void{
+    add(item: string, ammount: number): void{
         if(!this.inventory.has(item)){
             this.inventory.set(item, ammount)
         } else {
@@ -30,12 +28,12 @@ export default class Inventory{
         }
     }
 
-    remove(item: Gem, ammount: number): boolean{
+    remove(item: string, ammount: number): boolean{
         if(this.inventory.has(item)){
             if(this.get(item) === ammount){
                 this.inventory.delete(item)
-            }else if (this.get(item) >= ammount){
-                this.inventory.set(item, this.get(item) - ammount)
+            }else if (this.inventory.get(item) >= ammount){
+                this.inventory.set(item, this.inventory.get(item) - ammount)
             }
             return true
         }

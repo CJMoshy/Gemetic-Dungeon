@@ -1,0 +1,8 @@
+
+
+
+interface gemdata{
+    gems: number[]
+}
+
+

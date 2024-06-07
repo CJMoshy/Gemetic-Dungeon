@@ -17,7 +17,7 @@ const CONFIG = {
     physics: {
         default: 'arcade',
         arcade: {
-            // debug: true,
+            debug: true,
         }
     },
     fps: {
