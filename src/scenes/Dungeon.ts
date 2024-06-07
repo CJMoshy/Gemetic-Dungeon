@@ -161,15 +161,33 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
 
 }
 
-function checkVsWall(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap): integer {
-    if(walls.includes(map.getTileAt(_tile.x, _tile.y - 1, false, "Background").index)){
-        map.putTileAt(TILECODES.WALL_U, _tile.x, _tile.y, false, "WallDeco")
-    }
-    return 0b0000
+function checkVsWall(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap) {
+    let code = getTileCode(_tile, walls)
 }
-function checkVsPuddle(_tile: Phaser.Tilemaps.Tile): integer {
-    return 0b0000
+function checkVsPuddle(_tile: Phaser.Tilemaps.Tile) {
 }
-function checkVsPit(_tile: Phaser.Tilemaps.Tile): integer {
-    return 0b0000
+function checkVsPit(_tile: Phaser.Tilemaps.Tile) {
+}
+
+const FLOOR_VS_WALL =[ //the tilecode of overlay wall tiles to place when comparing a floor tile to a wall tile.
+    -1, // NO ADJACENT WALLS.
+    TILECODES.WALL_U, //1 up
+    TILECODES.WALL_D,  //2 down
+    TILECODES.WALL_U,  //3 up and down //need to also place c2
+    TILECODES.WALL_R,  //4 right
+    TILECODES.WALL_UR,  //5 up and right
+    TILECODES.WALL_DR,  //6 down and right
+    TILECODES.WALL_UDR,  //7 up down and right 
+    TILECODES.WALL_L,  //8 left
+    TILECODES.WALL_UL,  //9 up and left
+    TILECODES.WALL_DL,  //10 down and left
+    TILECODES.WALL_UDL,  //11 up down and left 
+    TILECODES.WALL_L,  //12 left and right  //also place c4
+    TILECODES.WALL_ULR,  //13 up left and right
+    TILECODES.WALL_DLR,  //14 down left and right 
+    TILECODES.WALL_NULL,  //15 surrounded just make it solid wall -- shouldn't exist? i think? idk.
+]
+
+function getTileCode(_tile:Phaser.Tilemaps.Tile, target:number[]){
+
 }
