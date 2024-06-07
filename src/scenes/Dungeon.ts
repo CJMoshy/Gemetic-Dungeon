@@ -9,8 +9,7 @@ import Gem from "../prefabs/Gem"
 
 import { DUNGEON } from "../main"
 import { TILECODES } from "../prefabs/generator"
-
-import { sceneData } from "../lib/interfaces"
+import { sceneData } from "../lib/Interfaces"
 
 var NoiseNS = require("noisejs")
 
@@ -37,8 +36,7 @@ export default class DungeonScene extends Phaser.Scene {
 
     constructor() {
         super({ key: 'DungeonScene' })
-
-        this.TILESIZEMULTIPLIER = 63 
+        this.TILESIZEMULTIPLIER = 63
         this.SPACER = 40
     }
 
@@ -52,9 +50,6 @@ export default class DungeonScene extends Phaser.Scene {
         this.load.image('base-tileset', tileset)
         this.load.tilemapTiledJSON('tilemapJSON', mapData)
 
-
-     
-        
         //some filler asset here for player
         this.load.image('test', test)
 
@@ -63,7 +58,7 @@ export default class DungeonScene extends Phaser.Scene {
     }
 
     create() {
-        
+
         const map = this.add.tilemap('tilemapJSON')
         const tileset = map.addTilesetImage('dungeon_tileset', 'base-tileset')
         const bgLayer = map.createLayer('Background', tileset)
@@ -74,7 +69,6 @@ export default class DungeonScene extends Phaser.Scene {
 
         doOverlayTiles(this, map)
 
-
         //player
         this.player = new Player(this, (spawn.x * this.TILESIZEMULTIPLIER) + this.SPACER, (spawn.y * this.TILESIZEMULTIPLIER) + this.SPACER, 'test', 0)
 
@@ -83,7 +77,7 @@ export default class DungeonScene extends Phaser.Scene {
         // this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
         this.cameras.main.startFollow(this.player, false, 0.5, 0.5, 0, 0)
 
-        //collides with walls, traps , TODO: json parse
+        //collides with walls, traps 
         // this.physics.add.collider(this.player, bgLayer)
         this.spawnGems()
     }
@@ -91,7 +85,7 @@ export default class DungeonScene extends Phaser.Scene {
     update(time: number, delta: number): void {
 
         //this is temporary until we have biger tiles and we can refine exit sizes FIX
-        if (Math.round(this.player.x) >= (this.exit.x * this.TILESIZEMULTIPLIER)  && Math.round(this.player.x) <= (this.exit.x * this.TILESIZEMULTIPLIER) + 63 && this.player.y >= (this.exit.y * this.TILESIZEMULTIPLIER)  && this.player.y <= (this.exit.y * this.TILESIZEMULTIPLIER) + 63) {
+        if (Math.round(this.player.x) >= (this.exit.x * this.TILESIZEMULTIPLIER) && Math.round(this.player.x) <= (this.exit.x * this.TILESIZEMULTIPLIER) + 63 && this.player.y >= (this.exit.y * this.TILESIZEMULTIPLIER) && this.player.y <= (this.exit.y * this.TILESIZEMULTIPLIER) + 63) {
             //console.log('exit time')
             const data: sceneData = {
                 inv: this.player.inventory
@@ -101,14 +95,12 @@ export default class DungeonScene extends Phaser.Scene {
         this.player.update()
     }
 
-    
-    spawnGems(): void{
+    spawnGems(): void {
         let gemsRef = DUNGEON.getCurrentGems()
-        gemsRef.forEach( e => {
-         
-            let frame
+        gemsRef.forEach(e => {
 
-            switch(e[2].toString()){
+            let frame
+            switch (e[2].toString()) {
                 case 'W':
                     frame = 60
                     break
@@ -122,7 +114,8 @@ export default class DungeonScene extends Phaser.Scene {
                     frame = 63
                     break
             }
-            let gem = new Gem(this, (e[1]  * this.TILESIZEMULTIPLIER) + this.SPACER , (e[0] * this.TILESIZEMULTIPLIER) + this.SPACER, 'spritesheet', frame, e[2].toString())
+
+            let gem = new Gem(this, (e[1] * this.TILESIZEMULTIPLIER) + this.SPACER, (e[0] * this.TILESIZEMULTIPLIER) + this.SPACER, 'spritesheet', frame, e[2].toString())
 
             this.physics.add.collider(this.player, gem, () => {
                 this.player.addItemToInventory(gem.type, 1)
@@ -131,8 +124,8 @@ export default class DungeonScene extends Phaser.Scene {
         })
     }
 
-  
-    
+
+
 }
 
 

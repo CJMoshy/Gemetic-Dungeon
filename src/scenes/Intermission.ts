@@ -1,14 +1,13 @@
 import Phaser from "phaser";
 import { DUNGEON } from "../main";
 import { tempGeneMaker } from "../prefabs/generator";
-import Inventory from "../lib/Inventory";
-import { sceneData } from "../lib/interfaces";
+import { sceneData } from "../lib/Interfaces";
 import makeNeuralNetCall from "../lib/Client";
 
 export default class IntermissionScene extends Phaser.Scene {
 
     constructor() {
-        super('IntermissionScene')
+        super({key: 'IntermissionScene'})
     }
 
 
@@ -26,10 +25,9 @@ export default class IntermissionScene extends Phaser.Scene {
                     console.log(result[0][x].toFixed(1))
                     
                     let occur = String(result[0][x].toFixed(1))
-                    let parsed = parseFloat(occur)
+                    let parsed = result[0][x].toFixed(1)
                     if(occur.includes('5')){
                         let choice = Math.floor(Math.random() * 2)
-                       
                         if(choice === 0){
                             console.log('rounding DOWN')
                             //round down
@@ -55,21 +53,17 @@ export default class IntermissionScene extends Phaser.Scene {
                     }
 
                     console.log('parsed value', parsed)
-
-                   
                 }
 
                 
 
 
-
-
-
-
                 console.log('\n\n')
                 console.log('-------------------------------------------')
+
                 DUNGEON.createNewRoom(tempGeneMaker((Math.floor(100000 + Math.random() * 900000))))
-                let timer = this.time.addEvent({
+
+                this.time.addEvent({
                     delay: 2000,                // ms
                     callback: () => {
                         this.scene.start("DungeonScene")
@@ -77,30 +71,11 @@ export default class IntermissionScene extends Phaser.Scene {
                     //args: [],
                     callbackScope: this,
                     loop: false
-                });
-
+                })
             }
         )
-
-
     }
     preload(): void { }
-    create(): void {
-
-        //console.log('new number: ', (Math.floor(100000 + Math.random() * 900000)))
-        // DUNGEON.createNewRoom(tempGeneMaker((Math.floor(100000 + Math.random() * 900000))))
-        // var timer = this.time.addEvent({
-        //     delay: 2000,                // ms
-        //     callback: () => {
-        //         this.scene.start("DungeonScene")
-        //     },
-        //     //args: [],
-        //     callbackScope: this,
-        //     loop: false
-        // });
-    }
-
-    update(time: number, delta: number): void {
-        //console.log('i am updating')
-    }
+    create(): void {}
+    update(time: number, delta: number): void {}
 }

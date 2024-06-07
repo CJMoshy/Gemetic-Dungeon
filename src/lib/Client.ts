@@ -1,4 +1,4 @@
-import { gemdata } from "./interfaces"
+import { gemdata } from "./Interfaces"
 
 
 export default async function makeNeuralNetCall(data: gemdata): Promise<any> {
@@ -10,7 +10,6 @@ export default async function makeNeuralNetCall(data: gemdata): Promise<any> {
         },
         body: JSON.stringify(data)
     })
-
 
     const response = await test1.json()
     return response.data

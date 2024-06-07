@@ -21,15 +21,15 @@ const CONFIG = {
         }
     },
     fps: {
-        target: 60, 
+        target: 60,
     },
-    zoom:1,
+    zoom: 1,
     scene: [DungeonScene, IntermissionScene]
 }
 
 export default CONFIG
 
-export const DUNGEON = new Gen.Dungeon((Math.random()*4294967296).toString(), "WAFWWWWF") //seed: get from dom. gene: get from neural map
+export const DUNGEON = new Gen.Dungeon((Math.random() * 4294967296).toString(), "WAFWWWWF") //seed: get from dom. gene: get from neural map
 
 const GAME = new Phaser.Game(CONFIG)
 

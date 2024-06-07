@@ -1,26 +1,26 @@
-export default class Inventory{
+export default class Inventory {
 
     active: any
     inventory: Map<string, number> | undefined
     isOpen: boolean
 
-    constructor(existing_inv: Map<string, number> | undefined){
+    constructor(existing_inv: Map<string, number> | undefined) {
         this.active = []
         this.inventory = undefined
         existing_inv === undefined ? this.inventory = new Map() : this.inventory = new Map(existing_inv)
         this.isOpen = false
     }
 
-    get(item: string): number{
-        if(this.inventory.has(item))
+    get(item: string): number {
+        if (this.inventory.has(item))
             return this.inventory.get(item)
-        else{
+        else {
             return 0
         }
     }
 
-    add(item: string, ammount: number): void{
-        if(!this.inventory.has(item)){
+    add(item: string, ammount: number): void {
+        if (!this.inventory.has(item)) {
             this.inventory.set(item, ammount)
         } else {
             let x = this.inventory.get(item)
@@ -28,11 +28,11 @@ export default class Inventory{
         }
     }
 
-    remove(item: string, ammount: number): boolean{
-        if(this.inventory.has(item)){
-            if(this.get(item) === ammount){
+    remove(item: string, ammount: number): boolean {
+        if (this.inventory.has(item)) {
+            if (this.get(item) === ammount) {
                 this.inventory.delete(item)
-            }else if (this.inventory.get(item) >= ammount){
+            } else if (this.inventory.get(item) >= ammount) {
                 this.inventory.set(item, this.inventory.get(item) - ammount)
             }
             return true
@@ -62,9 +62,9 @@ export default class Inventory{
     //         this.windowOpen = false
     //         scene.p1.animsFSM.transition('idle')
     //     })
-  
+
     //     winname = scene.add.bitmapText(windowX + 225, windowY+ 10, '8-bit-white', 'Inventory', 24).setOrigin(0.5, 0).setDepth(2)
-    
+
     //     let counter = 0 //if 5 then increase y pos
     //     let beginX = windowX + 64
     //     let beginY = windowY + 64

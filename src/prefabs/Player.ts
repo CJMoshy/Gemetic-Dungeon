@@ -9,7 +9,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     velocity: number
     inventory: Inventory
 
-
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame: number) {
         super(scene, x, y, texture, frame)
 
@@ -20,13 +19,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.keys = scene.input.keyboard?.createCursorKeys()
         this.velocity = 1000
-        
-        //todo collisions with gems
 
-        //todo inventory
         this.inventory = new Inventory(undefined) //todo might have to fix this
-
-        //todo data exporter
     }
 
 
@@ -57,7 +51,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     //collides with gems
-    addItemToInventory(type: string, ammount: number){
+    addItemToInventory(type: string, ammount: number) {
         this.inventory.add(type, ammount)
     }
 }

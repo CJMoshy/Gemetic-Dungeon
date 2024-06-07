@@ -904,57 +904,57 @@ class Room {
     }
 
     //trap functions
-    private placeAllTraps(){
+    private placeAllTraps() {
         let trapPlacer = geneDetermine(this.obstacleType, this.placePuddles, this.placePits, this.placeBraziers, this.placeSpikes)
         trapPlacer(this)
     }
-    private placePuddles(context:Room){
+    private placePuddles(context: Room) {
         //for this style, we:
         // place a puddle at the given spot if the perlin noise is below a certain level AND it's near-ish the center of the room.
-       
+
         //loop thru gem centers and radii
-        for(let i = 0; i < context.gemCenters.length; i++ ){
+        for (let i = 0; i < context.gemCenters.length; i++) {
             let currCenter = context.gemCenters[i]
-            let currRadius = context.roomShape != "A" ? context.savedRadii[i] : context.savedRadii[i]/2
+            let currRadius = context.roomShape != "A" ? context.savedRadii[i] : context.savedRadii[i] / 2
             //loop thru the nearby.
-            for(let currRow = Math.floor(currCenter[0] - currRadius/2); currRow < currCenter[0] + currRadius/2; currRow++){
-                for(let currCol = Math.floor(currCenter[1] - currRadius/2); currCol < currCenter[1] + currRadius/2; currCol++){
+            for (let currRow = Math.floor(currCenter[0] - currRadius / 2); currRow < currCenter[0] + currRadius / 2; currRow++) {
+                for (let currCol = Math.floor(currCenter[1] - currRadius / 2); currCol < currCenter[1] + currRadius / 2; currCol++) {
                     //console.log(context.r.perlin2(currRow/10, currCol/10))
-                    if(context.r.perlin2(currRow/10, currCol/10) <= -0.3){
+                    if (context.r.perlin2(currRow / 10, currCol / 10) <= -0.3) {
                         context.tiles[currRow][currCol] = "^"
                     }
                 }
             }
         }
     }
-    private placePits(context:Room){
+    private placePits(context: Room) {
         //for now, just use same puddle logic.
         context.placePuddles(context)
     }
-    private placeBraziers(context:Room){
+    private placeBraziers(context: Room) {
         //pattern style in the center of the room.
-        for(let i = 0; i < context.gemCenters.length; i++ ){
+        for (let i = 0; i < context.gemCenters.length; i++) {
             let currCenter = context.gemCenters[i]
             let currRadius = context.savedRadii[i]
             //loop thru the nearby.
-            for(let currRow = Math.floor(currCenter[0] - currRadius/2); currRow < currCenter[0] + currRadius/3; currRow++){
-                for(let currCol = Math.floor(currCenter[1] - currRadius/2); currCol < currCenter[1] + currRadius/2; currCol++){
-                  if (currCol != currCenter[1] && //not the very center row
-                    currCol % 2 != (currCenter[1] % 2) &&// offset off the center row.
-                    context.r.getR() < 0.4 //random isn't high
-                  ){
-                    context.tiles[currRow][currCol] = "^"
-                  }
+            for (let currRow = Math.floor(currCenter[0] - currRadius / 2); currRow < currCenter[0] + currRadius / 3; currRow++) {
+                for (let currCol = Math.floor(currCenter[1] - currRadius / 2); currCol < currCenter[1] + currRadius / 2; currCol++) {
+                    if (currCol != currCenter[1] && //not the very center row
+                        currCol % 2 != (currCenter[1] % 2) &&// offset off the center row.
+                        context.r.getR() < 0.4 //random isn't high
+                    ) {
+                        context.tiles[currRow][currCol] = "^"
+                    }
 
                 }
             }
         }
     }
-    private placeSpikes(context:Room){
+    private placeSpikes(context: Room) {
         // for each position, 0.1 chance to place spike there.
-        for(let currRow = 0; currRow < context.rows; currRow++){
-            for(let currCol = 0; currCol < context.cols; currCol++){
-                if(context.tiles[currRow][currCol] == "," && context.r.getR() <= 0.05){
+        for (let currRow = 0; currRow < context.rows; currRow++) {
+            for (let currCol = 0; currCol < context.cols; currCol++) {
+                if (context.tiles[currRow][currCol] == "," && context.r.getR() <= 0.05) {
                     context.tiles[currRow][currCol] = "^"
                 }
             }
@@ -1063,12 +1063,12 @@ class Room {
         }
         return retArray
     }
-   
+
 
 }
 
 //this class exists so I can control a room's RNG, isolated from Math.random. Also contains an instance of the noisejs package.
-class SubRandom { 
+class SubRandom {
 
     seed = 0;
     private myNoise: Noise
@@ -1079,7 +1079,7 @@ class SubRandom {
         if (this.seed === 0 || this.seed == undefined) { this.seed = Math.random() }
         //console.log("SubRandom initialized seed as: ", this.seed)
         this.myNoise = new NoiseNS.Noise(this.seed)
-        this.perlin2 = function (row: number, col: number):number {
+        this.perlin2 = function (row: number, col: number): number {
             return this.myNoise.perlin2(col, row) //perlin2 returns a range between -1 and 1
         }
 
