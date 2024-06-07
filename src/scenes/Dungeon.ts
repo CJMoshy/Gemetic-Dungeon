@@ -79,6 +79,7 @@ export default class DungeonScene extends Phaser.Scene {
 
         //collides with walls, traps 
         // this.physics.add.collider(this.player, bgLayer)
+        //spawn in the gems with the algorithm 
         this.spawnGems()
     }
 
@@ -88,7 +89,8 @@ export default class DungeonScene extends Phaser.Scene {
         if (Math.round(this.player.x) >= (this.exit.x * this.TILESIZEMULTIPLIER) && Math.round(this.player.x) <= (this.exit.x * this.TILESIZEMULTIPLIER) + 63 && this.player.y >= (this.exit.y * this.TILESIZEMULTIPLIER) && this.player.y <= (this.exit.y * this.TILESIZEMULTIPLIER) + 63) {
             //console.log('exit time')
             const data: sceneData = {
-                inv: this.player.inventory
+                inv: this.player.inventory,
+                curGene: DUNGEON.getCurrentGene()
             }
             this.scene.start('IntermissionScene', data)
         }
@@ -98,7 +100,7 @@ export default class DungeonScene extends Phaser.Scene {
     spawnGems(): void {
         let gemsRef = DUNGEON.getCurrentGems()
         gemsRef.forEach(e => {
-
+            //map the numbers to a certain gem sprite on the sheet 
             let frame
             switch (e[2].toString()) {
                 case 'W':
@@ -115,8 +117,10 @@ export default class DungeonScene extends Phaser.Scene {
                     break
             }
 
+            //make a new gem and then lower the collison box 
             let gem = new Gem(this, (e[1] * this.TILESIZEMULTIPLIER) + this.SPACER, (e[0] * this.TILESIZEMULTIPLIER) + this.SPACER, 'spritesheet', frame, e[2].toString())
 
+            //add the gem to the inventory and destroy the gem after it collides with the player 
             this.physics.add.collider(this.player, gem, () => {
                 this.player.addItemToInventory(gem.type, 1)
                 gem.destroy()
