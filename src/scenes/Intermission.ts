@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { DUNGEON } from "../main";
 import { tempGeneMaker } from "../prefabs/generator";
-import { sceneData } from "../lib/Interfaces";
+import { sceneData } from "../lib/interfaces";
 import makeNeuralNetCall from "../lib/Client";
 
 

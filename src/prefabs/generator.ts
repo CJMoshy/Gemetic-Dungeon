@@ -49,7 +49,7 @@ export class Dungeon {
         //tempGene is for randomized testing. remove it for prod
         let tempGene = tempGeneMaker(this.seed)
         this.currentRoom = new Room(this.seed, /*initialGene*/ tempGene, this.maxW, this.maxH);
-        console.log("Finished Initializing Dungeon!")
+        //console.log("Finished Initializing Dungeon!")
         this.currentRoomTilemap = []
         this.currentRoomTilemap = this.currentRoom.parseRoom()
         // console.log(this.currentRoomTilemap)
@@ -149,7 +149,7 @@ class Room {
 
         this.entrance = []
         this.exit = []
-        console.log(this.gene)
+        //console.log(this.gene)
         //second: initialize the empty state of the room.
         this.initMap()
 
@@ -167,8 +167,8 @@ class Room {
         //give entrance and exit
         this.entranceExit()
 
-        console.log("Finished creating the room.")
-        console.log(`${this}`) //forces pretty toString.
+        //console.log("Finished creating the room.")
+        //console.log(`${this}`) //forces pretty toString.
     }
 
     //room genning
@@ -186,7 +186,7 @@ class Room {
         //here, we create the outlines & fills of the rooms, and connect them with our corridors.
         //Min of 4 subrooms, max of 10.
         let numSubrooms = Math.floor(this.r.getR(6)) + 4
-        console.log("num subrooms: ", numSubrooms)
+        //console.log("num subrooms: ", numSubrooms)
         //decide the radius of each subroom based on the number, assuming grid size is hardcoded to 100x100.
         //this radius will be mutated by -1, 0, or 1 when the subroom is constructed in order to create variation.
         let subroomRadius = Math.floor(10 * (0.9 ** (numSubrooms - 4))) //max radius: 10, min radius: 5
@@ -243,8 +243,8 @@ class Room {
                     placeholder = [Math.floor(deltaY + potentialCenter[0]), Math.floor(deltaX + potentialCenter[1])]
                     tries++
                     if (tries >= 20) { throw ("water-roomgen: Could not find valid position within allotted tries.") }
-                    if (context.gemCenters.includes(placeholder)) { console.log("water-roomgen:prev made room"); continue; } //if we're directly centered on a previously created room, retry.
-                    if (placeholder[0] <= nextRadius || placeholder[1] <= nextRadius || placeholder[0] >= context.rows - 1 - nextRadius || placeholder[1] >= context.cols - 1 - nextRadius) { console.log("water-roomgen: out of bounds radius"); continue } // will overlap boundaries, retry
+                    if (context.gemCenters.includes(placeholder)) { /*console.log("water-roomgen:prev made room")*/; continue; } //if we're directly centered on a previously created room, retry.
+                    if (placeholder[0] <= nextRadius || placeholder[1] <= nextRadius || placeholder[0] >= context.rows - 1 - nextRadius || placeholder[1] >= context.cols - 1 - nextRadius) { /*console.log("water-roomgen: out of bounds radius");*/ continue } // will overlap boundaries, retry
                     break;
                 }
                 potentialCenter = placeholder
@@ -323,7 +323,7 @@ class Room {
                 //console.log("dy2:", dy2, "dx2:", dx2)
                 let temp = [Math.floor(potentialCenter[0] + dy2), Math.floor(potentialCenter[1] + dx2)]
                 potentialCenter = temp
-                console.log("hellooooo")
+                //console.log("hellooooo")
                 if (temp[0] < 0 + currRadius + 1) {
                     temp[0] += currRadius + 1 - temp[0]
                 } else if (temp[0] >= context.rows - currRadius - 1) {
@@ -773,7 +773,7 @@ class Room {
 
     }
     private fillRoomRectangle(currCenter: number[], currRadius: number, context: Room) {
-        console.log("in fillRoomRect")
+        //console.log("in fillRoomRect")
         //valid center has already been ensured by center creator func
         //fill radius of map around point with floor tiles, rect style.
         //valid center has already been ensured by checker func
@@ -831,6 +831,10 @@ class Room {
         //ok - first we need to decide which placement method we're using.
         let gemPlacer = geneDetermine(this.gemSpawnStyle, this.placeGemsWater, this.placeGemsEarth, this.placeGemsFire, this.placeGemsAir)
         gemPlacer(this)
+        this.confirmedGems.forEach(element => {
+            element.push(this.createGemColor())
+        });
+        console.log(this.confirmedGems)
     }
     private createGemColor(): string {
         //returns one of four letters based on randomness, weighting away from the current Theme
@@ -846,6 +850,8 @@ class Room {
 
     }
     private placeGemsWater(context: Room) {
+        console.log("gem style:water")
+
         //for this style, we:
         //weight gems away from the current main theme
         // place as many gems as possible that fall along or near predetermined diagonal lines.
@@ -853,40 +859,55 @@ class Room {
         context.gemEnds.forEach(element => {
             for (let offX = -99; offX < context.cols; offX += 10) {
                 if (Math.abs(element[0] - (element[1] + offX)) <= 2) {
-                    let gemColor = context.createGemColor()
-                    context.confirmedGems.push([element[0], element[1], gemColor])
+                    context.confirmedGems.push([element[0], element[1]])
                     //debug only:
                     //context.tiles[element[0]][element[1]] = "G"
                 }
             }
         });
+        if (context.confirmedGems.length < 3) {
+            console.log("water: not enough gems spawned: defaulting to air.")
+            context.placeGemsAir(context)
+        }
+
 
     }
     private placeGemsEarth(context: Room) {
+        console.log("gem style:earth")
+
         //for this style, we:
-        // place gems at all even-even positions.
-        context.gemEnds.forEach(element => {
-            if (element[0] % 2 == 0 && element[1] % 2 == 0) {
-                let gemColor = context.createGemColor()
-                context.confirmedGems.push([element[0], element[1], gemColor])
-            }
-        });
+        // place gems at all top-of-room positions.
+        let mod = context.roomShape == "A" ? 3 : 4
+        for (let i = 0; i < context.gemEnds.length; i += mod) {
+            let e = context.gemEnds[i]
+            context.confirmedGems.push([e[0], e[1]])
+        }
+        if (context.confirmedGems.length < 3) {
+            console.log("earth: not enough gems spawned: defaulting to air.")
+            context.placeGemsAir(context)
+        }
     }
     private placeGemsFire(context: Room) {
+        console.log("gem style:fire")
+
         //for this style, we: 
         //place a gem at the given spot IF the perlin noise at that spot is large enough.
         context.gemEnds.forEach(element => {
             //console.log(context.r.perlin2(element[0]/10, element[1]/10))
-            if (context.r.perlin2(element[0] / 10, element[1] / 10) > 0.44) { //updated to .4 since perlin noise was returned to -1, 1 range.
-                let gemColor = context.createGemColor()
-                context.confirmedGems.push([element[0], element[1], gemColor])
+            if (context.r.perlin2(element[0] / 10, element[1] / 10) > 0.2) { //updated to .2 since perlin noise was returned to -1, 1 range.
+                context.confirmedGems.push([element[0], element[1]])
                 //debug only:
                 //context.tiles[element[0]][element[1]] = "G"
             }
         });
+        if (context.confirmedGems.length < 3) {
+            console.log("fire: not enough gems spawned: defaulting to air.")
+            context.placeGemsAir(context)
+        }
 
     }
     private placeGemsAir(context: Room) {
+        console.log("gem style:air")
         //for this style, we: 
         // randomly choose a number of spots from the list of potential spots.
         let maxGems = context.gemEnds.length / 2 //the number of total gem positions, divided by 2
@@ -896,11 +917,12 @@ class Room {
         //console.log(tempCenters)
         for (let i = 0; i < gemCount; i++) {
             let pos = Math.floor(context.r.getR(tempCenters.length - 1))
-            context.confirmedGems.push([tempCenters[pos][0], tempCenters[pos][1], context.createGemColor()])
+            if (!context.confirmedGems.includes([tempCenters[pos][0], tempCenters[pos][1]])) { context.confirmedGems.push([tempCenters[pos][0], tempCenters[pos][1]]) }
             tempCenters.splice(pos, 1)
             //console.log("after the delete")
             //console.log(tempCenters)
         }
+        //console.log(context.confirmedGems)
     }
 
     //trap functions
