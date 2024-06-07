@@ -9,35 +9,30 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     velocity: number
     inventory: Inventory
 
-
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame: number) {
         super(scene, x, y, texture, frame)
 
         scene.add.existing(this)
         scene.physics.add.existing(this)
-        //scene.events.on('update', this.update, this)
 
+        // this.setOrigin(0.5,0.5)
 
         this.keys = scene.input.keyboard?.createCursorKeys()
-        this.velocity = 250
-        
-        //todo collisions with gems
+        this.velocity = 1000
 
-        //todo inventory
+        //make a new inventory for the gems 
         this.inventory = new Inventory(undefined) //todo might have to fix this
-
-        //todo data exporter
     }
 
 
     update(): void {
-        this.handleMovment()
+        this.handleMovement()
     }
 
-    handleMovment() {
+    handleMovement() {
 
         let vector: Phaser.Math.Vector2 = new Phaser.Math.Vector2(0, 0)
-
+        //arrow keys for movement and normalize it so that diag movements are not faster than the other directions. 
         if (this.keys.down.isDown) {
             vector.y = 1
         }
@@ -57,5 +52,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     //collides with gems
-    handleCollision(){}
+    addItemToInventory(type: string, amount: number) {
+        this.inventory.add(type, amount)
+    }
 }
