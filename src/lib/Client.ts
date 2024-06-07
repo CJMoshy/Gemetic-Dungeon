@@ -1,15 +1,18 @@
+import { gemdata } from "./interfaces"
 
-export default async function test(data: gemdata): Promise<void>{
+
+export default async function makeNeuralNetCall(data: gemdata): Promise<any> {
     //todo update endpoint
-    const test1 = await fetch('http://127.0.0.1:5000/run', {
+    const test1 = await fetch('https://cmpm147-final-server-064fe24af464.herokuapp.com/run', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
     })
-  
-    const txt = await test1.text()
-    console.log(txt)
+
+
+    const response = await test1.json()
+    return response.data
 }
 

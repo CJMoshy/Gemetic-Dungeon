@@ -10,6 +10,8 @@ import Gem from "../prefabs/Gem"
 import { DUNGEON } from "../main"
 import { TILECODES } from "../prefabs/generator"
 
+import { sceneData } from "../lib/interfaces"
+
 var NoiseNS = require("noisejs")
 
 //categorizing the codes here, for easy access during autotiling.
@@ -89,9 +91,12 @@ export default class DungeonScene extends Phaser.Scene {
     update(time: number, delta: number): void {
 
         //this is temporary until we have biger tiles and we can refine exit sizes FIX
-        if (Math.round(this.player.x) >= (this.exit.x * this.TILESIZEMULTIPLIER) - 32 && Math.round(this.player.x) <= (this.exit.x * this.TILESIZEMULTIPLIER) + 32 && this.player.y >= (this.exit.y * this.TILESIZEMULTIPLIER) - 32 && this.player.y <= (this.exit.y * this.TILESIZEMULTIPLIER) + 32) {
+        if (Math.round(this.player.x) >= (this.exit.x * this.TILESIZEMULTIPLIER)  && Math.round(this.player.x) <= (this.exit.x * this.TILESIZEMULTIPLIER) + 63 && this.player.y >= (this.exit.y * this.TILESIZEMULTIPLIER)  && this.player.y <= (this.exit.y * this.TILESIZEMULTIPLIER) + 63) {
             //console.log('exit time')
-            this.scene.start('IntermissionScene')
+            const data: sceneData = {
+                inv: this.player.inventory
+            }
+            this.scene.start('IntermissionScene', data)
         }
         this.player.update()
     }

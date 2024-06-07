@@ -1,8 +1,11 @@
+import Inventory from "./Inventory"
 
 
-
-interface gemdata{
+export interface gemdata{
     gems: number[]
 }
 
+export interface sceneData{
+    inv: Inventory
+}
 

@@ -11,11 +11,11 @@ export default class Inventory{
         this.isOpen = false
     }
 
-    get(item: string): boolean | number{
+    get(item: string): number{
         if(this.inventory.has(item))
             return this.inventory.get(item)
         else{
-            return false
+            return 0
         }
     }
 
