@@ -9,8 +9,8 @@ var NoiseNS = require("noisejs")
 import Gem from "../prefabs/Gem"
 
 import { DUNGEON } from "../main"
-import { TILECODES } from "../prefabs/generator"
-import { sceneData } from "../lib/interfaces"
+import { TILECODES } from "../lib/Generator"
+import { sceneData } from "../lib/Interfaces"
 
 
 //categorizing the codes here, for easy access during autotiling.
@@ -106,7 +106,7 @@ export default class DungeonScene extends Phaser.Scene {
 
     spawnGems(): void {
         let gemsRef = DUNGEON.getCurrentGems()
-        gemsRef.forEach(e => {
+        gemsRef.forEach( (e: any) => {
             //map the numbers to a certain gem sprite on the sheet 
             let frame
             switch (e[2].toString()) {

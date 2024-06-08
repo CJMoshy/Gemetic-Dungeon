@@ -1,5 +1,5 @@
 import Phaser from "phaser"
-import * as Gen from "./prefabs/generator"
+import * as Gen from "./lib/Generator"
 import DungeonScene from "./scenes/Dungeon"
 import IntermissionScene from "./scenes/Intermission"
 
