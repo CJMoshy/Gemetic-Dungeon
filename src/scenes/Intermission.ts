@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { DUNGEON } from "../main";
-import { sceneData } from "../lib/interfaces";
+import { sceneData } from "../lib/Interfaces";
 import makeNeuralNetCall from "../lib/Client";
 
 
