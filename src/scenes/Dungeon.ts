@@ -194,9 +194,11 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
         }
         else if (puddles.includes(_tile.index)) {
             checkVsPuddle(_tile, map)
+            checkVsWall(_tile, map)
         }
         else if (pits.includes(_tile.index)) {
             checkVsPit(_tile, map)
+            checkVsWall(_tile, map)
         }
 
     }
@@ -222,10 +224,10 @@ function checkVsPuddle(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap
     if (code == -1) { return }
     map.putTileAt(PUDDLE_VS_PUDDLE[code], _tile.x, _tile.y, false, "WaterDeco")
     if (code == 3) {
-        map.putTileAt(TILECODES.WATER_D, _tile.x, _tile.y, false, "WaterDeco2")
+        map.putTileAt(TILECODES.WATER_R, _tile.x, _tile.y, false, "WaterDeco2")
     }
     else if (code == 12){
-        map.putTileAt(TILECODES.WATER_R, _tile.x, _tile.y,false, "WaterDeco2")
+        map.putTileAt(TILECODES.WATER_D, _tile.x, _tile.y,false, "WaterDeco2")
     }
 }
 function checkVsPit(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap) {
@@ -233,10 +235,10 @@ function checkVsPit(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap) {
     if (code == -1) { return }
     map.putTileAt(PIT_VS_PIT[code], _tile.x, _tile.y, false, "PitDeco")
     if (code == 3) {
-        map.putTileAt(TILECODES.PIT_D, _tile.x, _tile.y, false, "PitDeco2")
+        map.putTileAt(TILECODES.PIT_R, _tile.x, _tile.y, false, "PitDeco2")
     }
     else if (code == 12){
-        map.putTileAt(TILECODES.PIT_R, _tile.x, _tile.y,false, "PitDeco2")
+        map.putTileAt(TILECODES.PIT_D, _tile.x, _tile.y,false, "PitDeco2")
     }
 }
 
@@ -260,10 +262,10 @@ const FLOOR_VS_WALL = [ //the tilecode of overlay wall tiles to place when compa
 ]
 
 const PUDDLE_VS_PUDDLE = [ // tilecode overlay for when comparing puddle tiles to other puddles tiles
-    -1, //solo tile
+    TILECODES.WATER_DLR, //solo tile //need also place left
     TILECODES.WATER_DLR, //1 Up only
     TILECODES.WATER_ULR, //2 Down Only
-    TILECODES.WATER_ULR, //3 Up and Down
+    TILECODES.WATER_L, //3 Up and Down //place right
     TILECODES.WATER_UDL, //4 right
     TILECODES.WATER_DL, //5 up and right
     TILECODES.WATER_UL, //6 down and right
@@ -279,10 +281,10 @@ const PUDDLE_VS_PUDDLE = [ // tilecode overlay for when comparing puddle tiles t
 ]
 
 const PIT_VS_PIT = [ //tile code overlay for placing pit tiles relative to other pit tiles
-    -1,
+    TILECODES.PIT_DLR, //solo tile, need also place left
     TILECODES.PIT_DLR, //1 up
     TILECODES.PIT_ULR, //2 down
-    TILECODES.PIT_ULR, //3 up and down
+    TILECODES.PIT_L, //3 up and down //place right
     TILECODES.PIT_UDL, //4 right
     TILECODES.PIT_DL, //5 up and right
     TILECODES.PIT_UL, //6 down and right
