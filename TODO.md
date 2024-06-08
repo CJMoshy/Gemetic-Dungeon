@@ -1,5 +1,5 @@
-- World Gen
+finish the neural net parsing
 
-- Pathfinding Gen
+feed into liams algo
 
-- Genetic algorithm
+fix dunegon generation bug
