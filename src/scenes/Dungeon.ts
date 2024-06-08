@@ -66,6 +66,10 @@ export default class DungeonScene extends Phaser.Scene {
         const decoLayer = map.createBlankLayer("Decoration", tileset) //create the empty overlay layer
         const wallDecoLayer = map.createBlankLayer("WallDeco", tileset) //create the empty overlay layer for wall deco
         const wallDecoLayer2 = map.createBlankLayer("WallDeco2", tileset) //create the empty overlay layer for wall deco THIS IS FOR MULTI LAYERING
+        const waterDecoLayer = map.createBlankLayer("WaterDeco", tileset) //create the empty overlay layer for wall deco
+        const waterDecoLayer2 = map.createBlankLayer("WaterDeco2", tileset) //create the empty overlay layer for wall deco THIS IS FOR MULTI LAYERING
+        const pitDecoLayer = map.createBlankLayer("PitDeco", tileset) //create the empty overlay layer for wall deco
+        const pitDecoLayer2 = map.createBlankLayer("PitDeco2", tileset) //create the empty overlay layer for wall deco THIS IS FOR MULTI LAYERING
         bgLayer.setCollisionByProperty({ collides: true })
         const spawn = bgLayer.findTile((tile) => tile.properties.spawn === true)
         this.exit = bgLayer.findTile((tile) => tile.properties.exit === true)
@@ -185,12 +189,14 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
 
             //do floor v wall checking here.
             checkVsWall(_tile, map)
-
+            //checkVsPit(_tile, map)
+            //checkVsPuddle(_tile, map)
         }
         else if (puddles.includes(_tile.index)) {
-
-        } else if (pits.includes(_tile.index)) {
-
+            checkVsPuddle(_tile, map)
+        }
+        else if (pits.includes(_tile.index)) {
+            checkVsPit(_tile, map)
         }
 
     }
@@ -211,9 +217,27 @@ function checkVsWall(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap) 
         map.putTileAt(TILECODES.WALL_R, _tile.x, _tile.y,false, "WallDeco2")
     }
 }
-function checkVsPuddle(_tile: Phaser.Tilemaps.Tile) {
+function checkVsPuddle(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap) {
+    let code = getTileCode(_tile, puddles, map)
+    if (code == -1) { return }
+    map.putTileAt(PUDDLE_VS_PUDDLE[code], _tile.x, _tile.y, false, "WaterDeco")
+    if (code == 3) {
+        map.putTileAt(TILECODES.WATER_D, _tile.x, _tile.y, false, "WaterDeco2")
+    }
+    else if (code == 12){
+        map.putTileAt(TILECODES.WATER_R, _tile.x, _tile.y,false, "WaterDeco2")
+    }
 }
-function checkVsPit(_tile: Phaser.Tilemaps.Tile) {
+function checkVsPit(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap) {
+    let code = getTileCode(_tile, pits, map)
+    if (code == -1) { return }
+    map.putTileAt(PIT_VS_PIT[code], _tile.x, _tile.y, false, "PitDeco")
+    if (code == 3) {
+        map.putTileAt(TILECODES.PIT_D, _tile.x, _tile.y, false, "PitDeco2")
+    }
+    else if (code == 12){
+        map.putTileAt(TILECODES.PIT_R, _tile.x, _tile.y,false, "PitDeco2")
+    }
 }
 
 const FLOOR_VS_WALL = [ //the tilecode of overlay wall tiles to place when comparing a floor tile to a wall tile.
@@ -233,6 +257,44 @@ const FLOOR_VS_WALL = [ //the tilecode of overlay wall tiles to place when compa
     TILECODES.WALL_ULR,  //13 up left and right
     TILECODES.WALL_DLR,  //14 down left and right 
     -1,  //15 surrounded just make it solid wall -- shouldn't exist? i think? idk.
+]
+
+const PUDDLE_VS_PUDDLE = [ // tilecode overlay for when comparing puddle tiles to other puddles tiles
+    -1, //solo tile
+    TILECODES.WATER_DLR, //1 Up only
+    TILECODES.WATER_ULR, //2 Down Only
+    TILECODES.WATER_ULR, //3 Up and Down
+    TILECODES.WATER_UDL, //4 right
+    TILECODES.WATER_DL, //5 up and right
+    TILECODES.WATER_UL, //6 down and right
+    TILECODES.WATER_L, //7 up, down, right
+    TILECODES.WATER_UDR, //8 left
+    TILECODES.WATER_DR, //9 left and up
+    TILECODES.WATER_UR, //10 left and down
+    TILECODES.WATER_R, //11 left, down, up
+    TILECODES.WATER_U, //12 left and right
+    TILECODES.WATER_D,//13 left, right, up
+    TILECODES.WATER_U, //14 left, right, down
+    -1  //15 - surrounded by water
+]
+
+const PIT_VS_PIT = [ //tile code overlay for placing pit tiles relative to other pit tiles
+    -1,
+    TILECODES.PIT_DLR, //1 up
+    TILECODES.PIT_ULR, //2 down
+    TILECODES.PIT_ULR, //3 up and down
+    TILECODES.PIT_UDL, //4 right
+    TILECODES.PIT_DL, //5 up and right
+    TILECODES.PIT_UL, //6 down and right
+    TILECODES.PIT_L, //7 up, down, right
+    TILECODES.PIT_UDR, //8 left
+    TILECODES.PIT_DR, //9 up left
+    TILECODES.PIT_UR, //10 down left
+    TILECODES.PIT_R, //11 up down left 
+    TILECODES.PIT_U, //12 right left
+    TILECODES.PIT_D, //13 right left up
+    TILECODES.PIT_U, //14 down left right
+    -1 //15 surrounded
 ]
 
 function gridCheck(xpos: number, ypos: number, target: number[], map: Phaser.Tilemaps.Tilemap) {
