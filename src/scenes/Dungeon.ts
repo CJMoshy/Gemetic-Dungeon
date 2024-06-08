@@ -10,7 +10,7 @@ import Gem from "../prefabs/Gem"
 
 import { DUNGEON } from "../main"
 import { TILECODES } from "../lib/Generator"
-import { sceneData } from "../lib/Interfaces"
+import { sceneData } from "../lib/interfaces"
 
 
 //categorizing the codes here, for easy access during autotiling.
