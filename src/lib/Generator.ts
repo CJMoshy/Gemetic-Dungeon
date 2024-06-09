@@ -731,10 +731,11 @@ class Room {
         this.tiles[randY][randX] = "n" //n for ntrance
 
         this.gemCenters.forEach(element => { //now places one exit per room, for navigation purposes.
-            randX = element[1] + Math.floor(this.r.getR(4)) - 2
-            randY = element[0] + Math.floor(this.r.getR(4)) - 2
+            randX = Math.floor(element[1] + this.r.getR(4) - 2)
+            randY = Math.floor(element[0] + this.r.getR(4) - 2)
             while (this.tiles[randY][randX] != ",") {
-                randX = element[1] + Math.floor(Math.floor(this.r.getR(4)) - 2), randY = element[0] + Math.floor(this.r.getR(this.rows))
+                randX = Math.floor(element[1] + this.r.getR(4) - 2)
+                randY = Math.floor(element[0] + this.r.getR(4) - 2)
             }
             this.exit.push([randY, randX])
             this.tiles[randY][randX] = "e" //e for exit
