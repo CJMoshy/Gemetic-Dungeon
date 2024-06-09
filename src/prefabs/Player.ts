@@ -15,7 +15,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        // this.setOrigin(0.5,0.5)
+        this.setCollideWorldBounds(true)
 
         this.keys = scene.input.keyboard?.createCursorKeys()
         this.velocity = 1000

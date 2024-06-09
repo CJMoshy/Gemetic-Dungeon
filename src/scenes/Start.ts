@@ -13,6 +13,29 @@ import fake4 from "../assets/img/fake-4.png"
 
 
 
+
+
+export const titleStyle = {
+    fontFamily: 'hit',
+    fontSize: 80,
+    fontWeight: 400,
+    fontStyle: "normal",
+    color: "#a16cbe",
+    stroke: "#FFFFFF",
+    strokeThickness: 8,
+
+}
+export const buttStyle = {
+    fontFamily: 'hit',
+    fontSize: 30,
+    fontWeight: 400,
+    fontStyle: "normal",
+    color: "#f0f0f0",
+    stroke: "#000000",
+    strokeThickness: 4,
+
+}
+
 /**
  * @class StartScene the beginning scene for the game, main menu and seed input
  */
@@ -72,26 +95,7 @@ export default class StartScene extends Phaser.Scene {
         font-weight: 400;
         font-style: normal;*/
 
-        let titleStyle = {
-            fontFamily: 'hit',
-            fontSize: 80,
-            fontWeight: 400,
-            fontStyle: "normal",
-            color: "#a16cbe",
-            stroke: "#FFFFFF",
-            strokeThickness: 8,
-
-        }
-        let buttStyle = {
-            fontFamily: 'hit',
-            fontSize: 30,
-            fontWeight: 400,
-            fontStyle: "normal",
-            color: "#f0f0f0",
-            stroke: "#000000",
-            strokeThickness: 4,
-
-        }
+      
         this.titleText = this.add.text(this.sys.canvas.width / 2, this.sys.canvas.height / 3, 'Gem-etic Dungeon', titleStyle).setAlign("center").setOrigin(0.5, 0.5)
         this.startB = this.add.text(this.sys.canvas.width / 3 + 50, this.sys.canvas.height / 2, "Start!", buttStyle).setOrigin(0.5, 0.5)
         this.creditsB = this.add.text(this.sys.canvas.width *2/3 - 50, this.sys.canvas.height / 2, "Credits", buttStyle).setOrigin(0.5, 0.5)

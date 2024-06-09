@@ -11,6 +11,7 @@ import Gem from "../prefabs/Gem"
 import { DUNGEON } from "../main"
 import { TILECODES } from "../lib/Generator"
 import { sceneData } from "../lib/interfaces"
+import { buttStyle } from "./Start"
 
 
 //categorizing the codes here, for easy access during autotiling.
@@ -34,6 +35,11 @@ export default class DungeonScene extends Phaser.Scene {
     TILESIZEMULTIPLIER: number
     SPACER: number
     exit: Phaser.Tilemaps.Tile
+    fireText: Phaser.GameObjects.Text
+    airText: Phaser.GameObjects.Text
+    earthText: Phaser.GameObjects.Text
+    waterText: Phaser.GameObjects.Text
+    tmpTxt: Phaser.GameObjects.Text
 
     constructor() {
         super({ key: 'DungeonScene' })
@@ -45,7 +51,8 @@ export default class DungeonScene extends Phaser.Scene {
 
     preload() {
 
-        // console.log(DUNGEON.getRoomParsed())
+        console.log(DUNGEON.getSeed())
+        console.log(DUNGEON.getCurrentGene())
         mapData.layers[0].data = DUNGEON.getRoomParsed()
 
         this.load.image('base-tileset', tileset)
@@ -70,34 +77,61 @@ export default class DungeonScene extends Phaser.Scene {
         const waterDecoLayer2 = map.createBlankLayer("WaterDeco2", tileset) //create the empty overlay layer for wall deco THIS IS FOR MULTI LAYERING
         const pitDecoLayer = map.createBlankLayer("PitDeco", tileset) //create the empty overlay layer for wall deco
         const pitDecoLayer2 = map.createBlankLayer("PitDeco2", tileset) //create the empty overlay layer for wall deco THIS IS FOR MULTI LAYERING
-        bgLayer.setCollisionByProperty({ collides: true })
+
         const spawn = bgLayer.findTile((tile) => tile.properties.spawn === true)
         this.exit = bgLayer.findTile((tile) => tile.properties.exit === true)
 
-        doOverlayTiles(this, map)
+        bgLayer.setCollisionByProperty({ collides: true })
 
         //player
         this.player = new Player(this, (spawn.x * this.TILESIZEMULTIPLIER) + this.SPACER, (spawn.y * this.TILESIZEMULTIPLIER) + this.SPACER, 'test', 0)
 
-        //camera
-        // this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-        // this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-        this.cameras.main.startFollow(this.player, false, 0.5, 0.5, 0, 0)
-
         //collides with walls, traps 
-        // this.physics.add.collider(this.player, bgLayer)
-        //spawn in the gems with the algorithm 
+        this.physics.add.collider(this.player, bgLayer)
+
+        //camera
+        this.cameras.main.startFollow(this.player, false, 0.5, 0.5, 0, 0)
+        this.cameras.main.setBounds(0,0,map.widthInPixels, map.heightInPixels)
+        this.physics.world.setBounds(0,0,map.widthInPixels, map.heightInPixels)
+
+        doOverlayTiles(this, map)
         this.spawnGems()
 
         //create ui & gamification
-        createOverlayUI()
+        
+        this.add.text(20, 20, 'Current Gene: ' + DUNGEON.getCurrentGene(), buttStyle).setScrollFactor(0)
+        this.add.text(20, 50, 'Current Seed: ' + DUNGEON.getSeedString(), buttStyle).setScrollFactor(0)
+        this.add.text(this.sys.canvas.width - 200, 20, 'Collected Gems', buttStyle).setScrollFactor(0)
+        this.fireText = this.add.text(this.sys.canvas.width - 175, 50, 'Fire: ', buttStyle).setScrollFactor(0)
+        this.airText = this.add.text(this.sys.canvas.width - 175, 80, 'Air: ', buttStyle).setScrollFactor(0)
+        this.earthText = this.add.text(this.sys.canvas.width - 175, 110, 'Earth: ', buttStyle).setScrollFactor(0)
+        this.waterText = this.add.text(this.sys.canvas.width - 175, 140, 'Water: ', buttStyle).setScrollFactor(0)
+
+        // this.tmpTxt = this.add.text(this.sys.canvas.width/2, this.sys.canvas.height/2, '^', buttStyle).setScrollFactor(0).setRotation(90)
+        
     }
 
     update(time: number, delta: number): void {
+       
+        // // Calculate the angle in radians
+        // let rad = Math.atan2((this.exit.y * this.TILESIZEMULTIPLIER) - this.player.y, (this.exit.x * this.TILESIZEMULTIPLIER) - this.player.x)
 
-        //this is temporary until we have biger tiles and we can refine exit sizes FIX
+        // // Convert radians to degrees
+        // let angle = rad * (180 / Math.PI);
+
+        // // Normalize the angle to range [0, 360)
+        // if (angle < 0) {
+        //     angle += 360;
+        // }
+
+        // console.log('Angle from player to exit:', angle);
+        // this.tmpTxt.setAngle(angle)
+
+        this.fireText.setText('Fire: ' + this.player.inventory.get('F'))
+        this.airText.setText('Air: ' + this.player.inventory.get('A'))
+        this.earthText.setText('Earth: ' + this.player.inventory.get('E'))
+        this.waterText.setText('Water: ' + this.player.inventory.get('W')) 
         if (Math.round(this.player.x) >= (this.exit.x * this.TILESIZEMULTIPLIER) && Math.round(this.player.x) <= (this.exit.x * this.TILESIZEMULTIPLIER) + 63 && this.player.y >= (this.exit.y * this.TILESIZEMULTIPLIER) && this.player.y <= (this.exit.y * this.TILESIZEMULTIPLIER) + 63) {
-            //console.log('exit time')
             const data: sceneData = {
                 inv: this.player.inventory,
                 curGene: DUNGEON.getCurrentGene()
@@ -138,10 +172,9 @@ export default class DungeonScene extends Phaser.Scene {
         })
     }
 
-
+    
 
 }
-
 
 
 function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
