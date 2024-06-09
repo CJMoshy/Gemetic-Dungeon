@@ -127,7 +127,7 @@ class Room {
     //store all of these as strings for continuity purposes; they will be evaluated in their respective functions.
 
     entrance: number[]
-    exit: number[]
+    exit: number[][]
 
     constructor(seed: number, gene: string/*length 8*/, width: number, height: number) {
         if (gene.length != 8) { throw ("Room:Constructor:Gene not length 8.") }
@@ -730,13 +730,17 @@ class Room {
         this.entrance = [randY, randX]
         this.tiles[randY][randX] = "n" //n for ntrance
 
-        randX = Math.floor(this.r.getR(this.cols))
-        randY = Math.floor(this.r.getR(this.rows))
-        while (this.tiles[randY][randX] != ",") {
-            randX = Math.floor(this.r.getR(this.cols)), randY = Math.floor(this.r.getR(this.rows))
-        }
-        this.exit = [randY, randX]
-        this.tiles[randY][randX] = "e" //e for exit
+        this.gemCenters.forEach(element => { //now places one exit per room, for navigation purposes.
+            randX = element[1] + Math.floor(this.r.getR(4)) - 2
+            randY = element[0] + Math.floor(this.r.getR(4)) - 2
+            while (this.tiles[randY][randX] != ",") {
+                randX = element[1] + Math.floor(Math.floor(this.r.getR(4)) - 2), randY = element[0] + Math.floor(this.r.getR(this.rows))
+            }
+            this.exit.push([randY, randX])
+            this.tiles[randY][randX] = "e" //e for exit
+        });
+        
+        // 
         //console.log("finished placing entrance and exit.")
     }
 
