@@ -107,7 +107,7 @@ export default class DungeonScene extends Phaser.Scene {
        
 
         //camera
-        this.cameras.main.startFollow(this.player, false, 0.5, 0.5, 0, 0)
+        this.cameras.main.startFollow(this.player, false, 0.05, 0.05, 0, 0)
         this.cameras.main.setBounds(0,0,map.widthInPixels, map.heightInPixels)
         this.physics.world.setBounds(0,0,map.widthInPixels, map.heightInPixels)
 
