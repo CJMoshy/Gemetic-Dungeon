@@ -11,7 +11,7 @@ import mapData from '../assets/tilemap/tile4-Sheet.json'
 
 
 import { DUNGEON } from "../main"
-import { TILECODES } from "../lib/Generator"
+import { TILECODES, geneDetermine } from "../lib/Generator"
 import { sceneData } from "../lib/interfaces"
 import { buttStyle } from "./Start"
 
@@ -241,6 +241,7 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
         //water tiles vs water tiles
         //pit tiles vs pit tiles
 
+
         let doDeco = false
         if (walls.includes(_tile.index)) { //add a variation of wall_null
             map.putTileAt(TILECODES.WALL_NULL, _tile.x, _tile.y, true, "Decoration")
@@ -269,6 +270,11 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
 
 
                 }
+            }
+            //new case: add deco under /over firepit.
+            if(_tile.index == TILECODES.BRAZIER){
+                map.putTileAt(bgFloors[geneDetermine(DUNGEON.getMainTheme(), 0, 1, 2, 3)], _tile.x, _tile.y, true, "Decoration")
+                map.putTileAt(TILECODES.BRAZIER, _tile.x, _tile.y, true, "PitDeco2")
             }
 
             //do floor v wall checking here.
