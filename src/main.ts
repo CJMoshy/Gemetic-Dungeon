@@ -11,18 +11,12 @@ const CONFIG = {
         autoCenter: Phaser.Scale.CENTER_BOTH,
         size: Phaser.Scale.FIT
     },
-    width: 1280,  //we might want to manually set a size in the future, for now its auto sizing
-    height: 720,
-    // backgroundColor: '#FACADE',
-    // pixelArt: true,
+    pixelArt: true,
     physics: {
         default: 'arcade',
         arcade: {
             debug: true,
         }
-    },
-    fps: {
-        target: 60,
     },
     zoom: 1,
     scene: [StartScene, DungeonScene, IntermissionScene]
