@@ -20,6 +20,11 @@ function getRandom(min: number, max: number): number {
  */
 export default class IntermissionScene extends Phaser.Scene {
 
+    gemTypes: string[]
+    collectedGems: number[]
+    finalArr: number[]
+
+
     /**
      * @constructor
      * @param {Phaser.Scene.key} key the key for the scene (name)
@@ -35,14 +40,21 @@ export default class IntermissionScene extends Phaser.Scene {
      */
     init(data: sceneData): void {
 
+        this.gemTypes = ['W', 'E', 'F', 'A'] //gem type ref
+        this.collectedGems = [data.inv.get('W'), data.inv.get('E'), data.inv.get('F'), data.inv.get('A')] // grab the collected gems from the players invetory
+        this.finalArr = [] // this is the array that will contain the parsed numbers from the net call
+
+    }
+
+
+    preload(): void {}
+
+    create(): void {
+
         this.add.text(this.sys.canvas.width / 2, this.sys.canvas.height / 3, 'Loading new map...', titleStyle).setOrigin(0.5)
 
-        const gemTypes: string[] = ['W', 'E', 'F', 'A'] //gem type ref
-        let collectedGems = [data.inv.get('W'), data.inv.get('E'), data.inv.get('F'), data.inv.get('A')] // grab the collected gems from the players invetory
-        let finalArr: number[] = [] // this is the array that will contain the parsed numbers from the net call
-
         //call the API
-        makeNeuralNetCall({ gems: collectedGems }).then(
+        makeNeuralNetCall({ gems: this.collectedGems }).then(
             result => {
 
                 //parse the results
@@ -54,9 +66,6 @@ export default class IntermissionScene extends Phaser.Scene {
                     if (occur.includes('5')) {
 
                         let choice: number = Math.floor(Math.random() * 2)
-                        //if there is a 0.5, then do a choice of 0 or 1
-                        //if it is 0.5, go down to 0 or up 
-                        // 0 :e.i rebmun eciohc eht no gnidneped 1 o
                         if (choice === 0) {
                             if (parsed === 0.5) {
                                 parsed = 0
@@ -76,24 +85,24 @@ export default class IntermissionScene extends Phaser.Scene {
                     } else {
                         parsed = Math.round(parsed)
                     }
-                    finalArr.push(parsed) //push each parsed value 
+                    this.finalArr.push(parsed) //push each parsed value 
                 }
 
-                let tmpGene = this.parseFinalArr(finalArr, gemTypes) //convert each value to its respective character
+                let tmpGene = this.parseFinalArr(this.finalArr, this.gemTypes) //convert each value to its respective character
 
                 //7th gene is a random one
-                tmpGene.push(gemTypes[getRandom(0, 3)])
+                tmpGene.push(this.gemTypes[getRandom(0, 3)])
 
                 //eighth is the most collected
                 let indexHighestElement = 0
-                let tmpMax = collectedGems[0]
-                for (let i = 1; i < collectedGems.length; i++) {
-                    if (collectedGems[i] > tmpMax) {
-                        tmpMax = collectedGems[i]
+                let tmpMax = this.collectedGems[0]
+                for (let i = 1; i < this.collectedGems.length; i++) {
+                    if (this.collectedGems[i] > tmpMax) {
+                        tmpMax = this.collectedGems[i]
                         indexHighestElement = i
                     }
                 }
-                tmpGene.push(gemTypes[indexHighestElement])
+                tmpGene.push(this.gemTypes[indexHighestElement])
 
                 //turn the gene array into a string to seed genetic algo
                 let gene: string = tmpGene.toString()
@@ -104,10 +113,12 @@ export default class IntermissionScene extends Phaser.Scene {
                 //TODO: liams algo will go here
                 let newGene = geneticAlgorithm(gene, oldGene, 0)
                 newGene = newGene.replace(/,/g, '')
+
                 let additionText =
-                    `Old Parent: ${oldGene}
-New Parent: ${gene}
-ResultGene: ${newGene}`
+                    `Old Parent: ${oldGene}  
+                    New Parent: ${gene} 
+                    ResultGene: ${newGene}`
+
                 this.add.text(this.sys.canvas.width / 2 - 10, this.sys.canvas.height / 2, additionText, buttStyle).setOrigin(0.5)
 
                 DUNGEON.createNewRoom(newGene) // change this value to the result of liams algo
@@ -125,9 +136,7 @@ ResultGene: ${newGene}`
         )
     }
 
-    //ununsed as of now...
-    preload(): void { }
-    create(): void { }
+
     update(time: number, delta: number): void { }
 
 
