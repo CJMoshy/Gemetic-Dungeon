@@ -847,7 +847,7 @@ class Room {
         let highRoll = geneDetermine(t, "F", "A", "W", "E") //45% of having opposite color
 
         let rand = this.r.getR(10)
-        return (rand <= 1.5 ? lowRoll : (rand <= 3.5 ? regRoll : (rand <= 5.5 ? reg2Roll : (highRoll))))
+        return (rand <= 2 ? lowRoll : (rand <= 4.5 ? regRoll : (rand <= 7 ? reg2Roll : (highRoll))))
 
 
     }
