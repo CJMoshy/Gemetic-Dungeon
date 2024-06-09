@@ -79,15 +79,32 @@ export default class DungeonScene extends Phaser.Scene {
         const pitDecoLayer2 = map.createBlankLayer("PitDeco2", tileset) //create the empty overlay layer for wall deco THIS IS FOR MULTI LAYERING
 
         const spawn = bgLayer.findTile((tile) => tile.properties.spawn === true)
-        this.exit = bgLayer.findTile((tile) => tile.properties.exit === true)
-
+        // this.exit = bgLayer.findTile((tile) => tile.properties.exit === true)
+        
         bgLayer.setCollisionByProperty({ collides: true })
 
         //player
         this.player = new Player(this, (spawn.x * this.TILESIZEMULTIPLIER) + this.SPACER, (spawn.y * this.TILESIZEMULTIPLIER) + this.SPACER, 'test', 0)
 
         //collides with walls, traps 
-        this.physics.add.collider(this.player, bgLayer)
+        this.physics.add.collider(this.player, bgLayer, (player, tile)=>{
+            if(player instanceof Phaser.Tilemaps.Tile){
+                console.log('players A TILE')
+            }
+                
+            if(tile instanceof Phaser.Tilemaps.Tile){
+                console.log('tielS A TILE')
+                console.log(tile.index)
+                if(tile.index === 59){
+                    const data: sceneData = {
+                                inv: this.player.inventory,
+                                curGene: DUNGEON.getCurrentGene()
+                    }
+                    this.scene.start('IntermissionScene', data)
+                }
+            }
+        })
+       
 
         //camera
         this.cameras.main.startFollow(this.player, false, 0.5, 0.5, 0, 0)
@@ -98,46 +115,21 @@ export default class DungeonScene extends Phaser.Scene {
         this.spawnGems()
 
         //create ui & gamification
-        
         this.add.text(20, 20, 'Current Gene: ' + DUNGEON.getCurrentGene(), buttStyle).setScrollFactor(0)
         this.add.text(20, 50, 'Current Seed: ' + DUNGEON.getSeedString(), buttStyle).setScrollFactor(0)
         this.add.text(this.sys.canvas.width - 200, 20, 'Collected Gems', buttStyle).setScrollFactor(0)
         this.fireText = this.add.text(this.sys.canvas.width - 175, 50, 'Fire: ', buttStyle).setScrollFactor(0)
         this.airText = this.add.text(this.sys.canvas.width - 175, 80, 'Air: ', buttStyle).setScrollFactor(0)
         this.earthText = this.add.text(this.sys.canvas.width - 175, 110, 'Earth: ', buttStyle).setScrollFactor(0)
-        this.waterText = this.add.text(this.sys.canvas.width - 175, 140, 'Water: ', buttStyle).setScrollFactor(0)
-
-        // this.tmpTxt = this.add.text(this.sys.canvas.width/2, this.sys.canvas.height/2, '^', buttStyle).setScrollFactor(0).setRotation(90)
-        
+        this.waterText = this.add.text(this.sys.canvas.width - 175, 140, 'Water: ', buttStyle).setScrollFactor(0)  
     }
 
-    update(time: number, delta: number): void {
-       
-        // // Calculate the angle in radians
-        // let rad = Math.atan2((this.exit.y * this.TILESIZEMULTIPLIER) - this.player.y, (this.exit.x * this.TILESIZEMULTIPLIER) - this.player.x)
-
-        // // Convert radians to degrees
-        // let angle = rad * (180 / Math.PI);
-
-        // // Normalize the angle to range [0, 360)
-        // if (angle < 0) {
-        //     angle += 360;
-        // }
-
-        // console.log('Angle from player to exit:', angle);
-        // this.tmpTxt.setAngle(angle)
-
+   
+    update(time: number, delta: number): void {    
         this.fireText.setText('Fire: ' + this.player.inventory.get('F'))
         this.airText.setText('Air: ' + this.player.inventory.get('A'))
         this.earthText.setText('Earth: ' + this.player.inventory.get('E'))
         this.waterText.setText('Water: ' + this.player.inventory.get('W')) 
-        if (Math.round(this.player.x) >= (this.exit.x * this.TILESIZEMULTIPLIER) && Math.round(this.player.x) <= (this.exit.x * this.TILESIZEMULTIPLIER) + 63 && this.player.y >= (this.exit.y * this.TILESIZEMULTIPLIER) && this.player.y <= (this.exit.y * this.TILESIZEMULTIPLIER) + 63) {
-            const data: sceneData = {
-                inv: this.player.inventory,
-                curGene: DUNGEON.getCurrentGene()
-            }
-            this.scene.start('IntermissionScene', data)
-        }
         this.player.update()
     }
 

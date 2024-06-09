@@ -149,7 +149,7 @@
                                    "id": 59,
                                    "properties": [
                                           {
-                                                 "name": "exit",
+                                                 "name": "collides",
                                                  "type": "bool",
                                                  "value": true
                                           }
