@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { DUNGEON } from "../main";
 import { sceneData } from "../lib/interfaces";
 import makeNeuralNetCall from "../lib/Client";
+import geneticAlgorithm from "../prefabs/Genetic";
 
 import { buttStyle } from "./Start";
 
@@ -100,12 +101,18 @@ export default class IntermissionScene extends Phaser.Scene {
                 let gene: string = tmpGene.toString()
                 gene = gene.replace(/,/g,'')
 
+
+                let gene2:string = data.curGene
+
                 let oldGene = DUNGEON.getCurrentGene()
                 let additionText =
 `Old Gene: ${oldGene}
 New Gene: ${gene}]`
                 this.add.text(this.sys.canvas.width/2, this.sys.canvas.height/2, additionText, buttStyle)
                 //TODO: liams algo will go here
+                gene = geneticAlgorithm(gene, gene2, 0)
+                gene = gene.replace(/,/g,'')
+
                 
                 DUNGEON.createNewRoom(gene) // change this value to the result of liams algo
 

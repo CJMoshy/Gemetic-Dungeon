@@ -17,3 +17,9 @@ export interface sceneData {
     curGene: string
 }
 
+export interface geneticCodes {
+    element1: string,
+    element2: string,
+    element3: string,
+    element4: string,
+}
