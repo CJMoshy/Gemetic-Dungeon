@@ -1,12 +1,14 @@
 import Phaser from "phaser"
 import Player from "../prefabs/Player"
+var NoiseNS = require("noisejs")
+import Gem from "../prefabs/Gem"
+
 
 import test from '../assets/img/player-placeholder.png' //this will become player char
+import player from '../assets/spritesheets/player/player-spritesheet.png'
 import tileset from '../assets/tilemap/tile4-Sheet.png'
 import mapData from '../assets/tilemap/tile4-Sheet.json'
-var NoiseNS = require("noisejs")
 
-import Gem from "../prefabs/Gem"
 
 import { DUNGEON } from "../main"
 import { TILECODES } from "../lib/Generator"
@@ -40,6 +42,7 @@ export default class DungeonScene extends Phaser.Scene {
     earthText: Phaser.GameObjects.Text
     waterText: Phaser.GameObjects.Text
     tmpTxt: Phaser.GameObjects.Text
+    currentMoveDir: string
 
     constructor() {
         super({ key: 'DungeonScene' })
@@ -47,7 +50,9 @@ export default class DungeonScene extends Phaser.Scene {
         this.SPACER = 40
     }
 
-    init() { }
+    init() {
+        this.currentMoveDir = ''
+    }
 
     preload() {
 
@@ -59,13 +64,41 @@ export default class DungeonScene extends Phaser.Scene {
         this.load.tilemapTiledJSON('tilemapJSON', mapData)
 
         //some filler asset here for player
-        this.load.image('test', test)
+        this.load.spritesheet('playerSpritesheet', player, {frameWidth: 32, frameHeight: 32})
 
         //load spritesheet for gems 
         this.load.spritesheet('spritesheet', tileset, { frameWidth: 84, frameHeight: 84 });
     }
 
     create() {
+        //player animations
+        this.anims.create({
+            key: 'player-walk-up',
+            frames: this.anims.generateFrameNumbers('playerSpritesheet', {start: 20, end: 28}),
+            frameRate: 12,
+            repeat: 0
+        })
+
+        this.anims.create({
+            key: 'player-walk-down',
+            frames: this.anims.generateFrameNumbers('playerSpritesheet', {start: 29, end: 37}),
+            frameRate: 12,
+            repeat: 0
+        })
+
+        this.anims.create({
+            key: 'player-walk-left',
+            frames: this.anims.generateFrameNumbers('playerSpritesheet', {start: 10, end: 19}),
+            frameRate: 12,
+            repeat: 0
+        })
+
+        this.anims.create({
+            key: 'player-walk-right',
+            frames: this.anims.generateFrameNumbers('playerSpritesheet', {start: 0, end: 9}),
+            frameRate: 12,
+            repeat: 0
+        })
 
         const map = this.add.tilemap('tilemapJSON')
         const tileset = map.addTilesetImage('dungeon_tileset', 'base-tileset')
@@ -84,17 +117,15 @@ export default class DungeonScene extends Phaser.Scene {
         bgLayer.setCollisionByProperty({ collides: true })
 
         //player
-        this.player = new Player(this, (spawn.x * this.TILESIZEMULTIPLIER) + this.SPACER, (spawn.y * this.TILESIZEMULTIPLIER) + this.SPACER, 'test', 0)
+        this.player = new Player(this, (spawn.x * this.TILESIZEMULTIPLIER) + this.SPACER, (spawn.y * this.TILESIZEMULTIPLIER) + this.SPACER, 'playerSpritesheet', 33)
 
         //collides with walls, traps 
         this.physics.add.collider(this.player, bgLayer, (player, tile)=>{
             if(player instanceof Phaser.Tilemaps.Tile){
-                console.log('players A TILE')
+              
             }
                 
             if(tile instanceof Phaser.Tilemaps.Tile){
-                console.log('tielS A TILE')
-                console.log(tile.index)
                 if(tile.index === 59){
                     const data: sceneData = {
                                 inv: this.player.inventory,
@@ -121,7 +152,7 @@ export default class DungeonScene extends Phaser.Scene {
         this.fireText = this.add.text(this.sys.canvas.width - 175, 50, 'Fire: ', buttStyle).setScrollFactor(0)
         this.airText = this.add.text(this.sys.canvas.width - 175, 80, 'Air: ', buttStyle).setScrollFactor(0)
         this.earthText = this.add.text(this.sys.canvas.width - 175, 110, 'Earth: ', buttStyle).setScrollFactor(0)
-        this.waterText = this.add.text(this.sys.canvas.width - 175, 140, 'Water: ', buttStyle).setScrollFactor(0)  
+        this.waterText = this.add.text(this.sys.canvas.width - 175, 140, 'Water: ', buttStyle).setScrollFactor(0)        
     }
 
    
@@ -131,6 +162,31 @@ export default class DungeonScene extends Phaser.Scene {
         this.earthText.setText('Earth: ' + this.player.inventory.get('E'))
         this.waterText.setText('Water: ' + this.player.inventory.get('W')) 
         this.player.update()
+        
+        if(this.currentMoveDir !== this.player.moveStatus){
+            this.player.anims.stop()
+            this.currentMoveDir = this.player.moveStatus
+        }
+
+        if(!this.player.anims.isPlaying){
+            switch(this.player.moveStatus){
+                case 'up':
+                    this.player.anims.play('player-walk-up')
+                    break
+                case 'down':
+                    this.player.anims.play('player-walk-down')
+                    break
+                case 'left':
+                    this.player.anims.play('player-walk-left')
+                    break
+                case 'right':
+                    this.player.anims.play('player-walk-right')
+                    break
+                default:
+                    break
+            }
+        }
+        
     }
 
     spawnGems(): void {
