@@ -90,6 +90,9 @@ export default class DungeonScene extends Phaser.Scene {
 
         doOverlayTiles(this, map)
         this.spawnGems()
+
+        //create ui & gamification
+        createOverlayUI()
     }
 
     update(time: number, delta: number): void {
@@ -312,4 +315,8 @@ function getTileCode(_tile: Phaser.Tilemaps.Tile, target: number[], map: Phaser.
     let retVal = nb + sb + eb + wb
     //console.log(retVal)
     return retVal
+}
+
+function createOverlayUI(){
+    
 }

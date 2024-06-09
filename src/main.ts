@@ -2,6 +2,7 @@ import Phaser from "phaser"
 import * as Gen from "./lib/Generator"
 import DungeonScene from "./scenes/Dungeon"
 import IntermissionScene from "./scenes/Intermission"
+import StartScene from "./scenes/Start"
 
 const CONFIG = {
     type: Phaser.CANVAS,
@@ -24,7 +25,7 @@ const CONFIG = {
         target: 60,
     },
     zoom: 1,
-    scene: [DungeonScene, IntermissionScene]
+    scene: [StartScene, DungeonScene, IntermissionScene]
 }
 
 export default CONFIG
@@ -32,4 +33,3 @@ export default CONFIG
 export const DUNGEON = new Gen.Dungeon((Math.random() * 4294967296).toString(), "WAFWWWWF") //seed: get from dom. gene: get from neural map
 
 const GAME = new Phaser.Game(CONFIG)
-
