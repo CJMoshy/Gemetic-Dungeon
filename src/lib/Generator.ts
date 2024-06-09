@@ -262,7 +262,7 @@ class Room {
         let potentialCenter: number[] = [-1, -1];
         let currRadius = 0;
         let nextRadius = 0;
-        let distanceBetween = geneDetermine(context.connectionType, -1, subroomRadius / 2, subroomRadius, subroomRadius)
+        let distanceBetween = geneDetermine(context.connectionType, -3, subroomRadius / 2, subroomRadius, subroomRadius)
         /* Theme 2: fire *used to be earth
                 pseudocode:
                 first room is in one of the corners, chosen at random.
@@ -939,7 +939,7 @@ class Room {
         //loop thru gem centers and radii
         for (let i = 0; i < context.gemCenters.length; i++) {
             let currCenter = context.gemCenters[i]
-            let currRadius = context.roomShape != "A" ? context.savedRadii[i] : context.savedRadii[i] / 2
+            let currRadius = context.roomShape != "A" && context.roomShape != "F" ? context.savedRadii[i] : context.savedRadii[i] / 3
             //loop thru the nearby.
             for (let currRow = Math.floor(currCenter[0] - currRadius / 2); currRow < currCenter[0] + currRadius / 2; currRow++) {
                 for (let currCol = Math.floor(currCenter[1] - currRadius / 2); currCol < currCenter[1] + currRadius / 2; currCol++) {
@@ -959,7 +959,7 @@ class Room {
         //pattern style in the center of the room.
         for (let i = 0; i < context.gemCenters.length; i++) {
             let currCenter = context.gemCenters[i]
-            let currRadius = context.savedRadii[i]
+            let currRadius = context.roomShape != "A" && context.roomShape != "F" ? context.savedRadii[i] : context.savedRadii[i] / 3
             //loop thru the nearby.
             for (let currRow = Math.floor(currCenter[0] - currRadius / 2); currRow < currCenter[0] + currRadius / 3; currRow++) {
                 for (let currCol = Math.floor(currCenter[1] - currRadius / 2); currCol < currCenter[1] + currRadius / 2; currCol++) {
@@ -975,7 +975,7 @@ class Room {
         }
     }
     private placeSpikes(context: Room) {
-        // for each position, 0.1 chance to place spike there.
+        // for each position, 0.05 chance to place spike there.
         for (let currRow = 0; currRow < context.rows; currRow++) {
             for (let currCol = 0; currCol < context.cols; currCol++) {
                 if (context.tiles[currRow][currCol] == "," && context.r.getR() <= 0.05) {

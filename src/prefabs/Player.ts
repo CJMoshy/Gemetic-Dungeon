@@ -18,7 +18,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.setCollideWorldBounds(true)
 
         this.keys = scene.input.keyboard?.createCursorKeys()
-        this.velocity = 1000
+        this.velocity = 350
 
         //make a new inventory for the gems 
         this.inventory = new Inventory(undefined) //todo might have to fix this
