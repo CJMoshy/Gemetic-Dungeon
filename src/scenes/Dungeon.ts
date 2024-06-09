@@ -45,7 +45,8 @@ export default class DungeonScene extends Phaser.Scene {
 
     preload() {
 
-        // console.log(DUNGEON.getRoomParsed())
+        console.log(DUNGEON.getSeed())
+        console.log(DUNGEON.getCurrentGene())
         mapData.layers[0].data = DUNGEON.getRoomParsed()
 
         this.load.image('base-tileset', tileset)
@@ -70,31 +71,30 @@ export default class DungeonScene extends Phaser.Scene {
         const waterDecoLayer2 = map.createBlankLayer("WaterDeco2", tileset) //create the empty overlay layer for wall deco THIS IS FOR MULTI LAYERING
         const pitDecoLayer = map.createBlankLayer("PitDeco", tileset) //create the empty overlay layer for wall deco
         const pitDecoLayer2 = map.createBlankLayer("PitDeco2", tileset) //create the empty overlay layer for wall deco THIS IS FOR MULTI LAYERING
-        bgLayer.setCollisionByProperty({ collides: true })
+
         const spawn = bgLayer.findTile((tile) => tile.properties.spawn === true)
         this.exit = bgLayer.findTile((tile) => tile.properties.exit === true)
 
-        doOverlayTiles(this, map)
+        bgLayer.setCollisionByProperty({ collides: true })
 
         //player
         this.player = new Player(this, (spawn.x * this.TILESIZEMULTIPLIER) + this.SPACER, (spawn.y * this.TILESIZEMULTIPLIER) + this.SPACER, 'test', 0)
 
-        //camera
-        // this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-        // this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-        this.cameras.main.startFollow(this.player, false, 0.5, 0.5, 0, 0)
-
         //collides with walls, traps 
-        // this.physics.add.collider(this.player, bgLayer)
-        //spawn in the gems with the algorithm 
+        this.physics.add.collider(this.player, bgLayer)
+
+        //camera
+        this.cameras.main.startFollow(this.player, false, 0.5, 0.5, 0, 0)
+        this.cameras.main.setBounds(0,0,map.widthInPixels, map.heightInPixels)
+        this.physics.world.setBounds(0,0,map.widthInPixels, map.heightInPixels)
+
+        doOverlayTiles(this, map)
         this.spawnGems()
     }
 
     update(time: number, delta: number): void {
 
-        //this is temporary until we have biger tiles and we can refine exit sizes FIX
         if (Math.round(this.player.x) >= (this.exit.x * this.TILESIZEMULTIPLIER) && Math.round(this.player.x) <= (this.exit.x * this.TILESIZEMULTIPLIER) + 63 && this.player.y >= (this.exit.y * this.TILESIZEMULTIPLIER) && this.player.y <= (this.exit.y * this.TILESIZEMULTIPLIER) + 63) {
-            //console.log('exit time')
             const data: sceneData = {
                 inv: this.player.inventory,
                 curGene: DUNGEON.getCurrentGene()
@@ -138,7 +138,6 @@ export default class DungeonScene extends Phaser.Scene {
 
 
 }
-
 
 
 function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {

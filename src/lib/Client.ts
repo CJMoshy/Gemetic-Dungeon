@@ -1,4 +1,4 @@
-import { gemdata } from "./interfaces"
+import { gemdata } from "./Interfaces"
 
 /**
  * @function makeNeuralNetCall makes a call to the neural net API with the exported data
