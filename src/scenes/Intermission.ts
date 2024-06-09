@@ -35,7 +35,7 @@ export default class IntermissionScene extends Phaser.Scene {
      */
     init(data: sceneData): void {
 
-        this.add.text(this.sys.canvas.width / 2, this.sys.canvas.height / 3, 'Loading new map...', titleStyle).setOrigin(0.5)
+        this.add.text(this.sys.canvas.width / 2, this.sys.canvas.height / 3, 'Loading next room...', titleStyle).setOrigin(0.5)
 
         const gemTypes: string[] = ['W', 'E', 'F', 'A'] //gem type ref
         let collectedGems = [data.inv.get('W'), data.inv.get('E'), data.inv.get('F'), data.inv.get('A')] // grab the collected gems from the players invetory
@@ -107,7 +107,7 @@ export default class IntermissionScene extends Phaser.Scene {
                 let additionText =
                     `Old Parent: ${oldGene}
 New Parent: ${gene}
-ResultGene: ${newGene}`
+Child Gene: ${newGene}`
                 this.add.text(this.sys.canvas.width / 2 - 10, this.sys.canvas.height / 2, additionText, buttStyle).setOrigin(0.5)
 
                 DUNGEON.createNewRoom(newGene) // change this value to the result of liams algo

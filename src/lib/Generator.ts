@@ -841,7 +841,7 @@ class Room {
         this.confirmedGems.forEach(element => {
             element.push(this.createGemColor())
         });
-        console.log(this.confirmedGems)
+        //console.log(this.confirmedGems)
     }
     private createGemColor(): string {
         //returns one of four letters based on randomness, weighting away from the current Theme
@@ -857,7 +857,7 @@ class Room {
 
     }
     private placeGemsWater(context: Room) {
-        console.log("gem style:water")
+        //console.log("gem style:water")
 
         //for this style, we:
         //weight gems away from the current main theme
@@ -880,7 +880,7 @@ class Room {
 
     }
     private placeGemsEarth(context: Room) {
-        console.log("gem style:earth")
+        //console.log("gem style:earth")
 
         //for this style, we:
         // place gems at all top-of-room positions.
@@ -895,7 +895,7 @@ class Room {
         }
     }
     private placeGemsFire(context: Room) {
-        console.log("gem style:fire")
+        //console.log("gem style:fire")
 
         //for this style, we: 
         //place a gem at the given spot IF the perlin noise at that spot is large enough.
@@ -914,7 +914,7 @@ class Room {
 
     }
     private placeGemsAir(context: Room) {
-        console.log("gem style:air")
+        //console.log("gem style:air")
         //for this style, we: 
         // randomly choose a number of spots from the list of potential spots.
         let maxGems = context.gemEnds.length / 2 //the number of total gem positions, divided by 2
