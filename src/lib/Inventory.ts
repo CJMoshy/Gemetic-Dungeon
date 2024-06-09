@@ -15,7 +15,7 @@ export default class Inventory {
         existing_inv === undefined ? this.inventory = new Map() : this.inventory = new Map(existing_inv)
         this.isOpen = false
     }
-    
+
     /**
      * 
      * @param {string} item gene string representation to check for in inventory
@@ -59,5 +59,5 @@ export default class Inventory {
             return true
         }
         return false
-    }  
+    }
 }

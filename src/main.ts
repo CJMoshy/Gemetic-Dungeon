@@ -15,7 +15,6 @@ const CONFIG = {
     physics: {
         default: 'arcade',
         arcade: {
-            debug: true,
         }
     },
     zoom: 1,
@@ -26,4 +25,3 @@ export default CONFIG
 
 export var DUNGEON = new Gen.Dungeon() //now creates an empty dungeon so Start.ts can initialize() 
 window.addEventListener('load', () => {const GAME = new Phaser.Game(CONFIG)});
-//const GAME = new Phaser.Game(CONFIG)

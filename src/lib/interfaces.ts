@@ -2,6 +2,7 @@ import Inventory from "./Inventory"
 
 /**
  * @interface gemdata correct format to make the API call with
+ * @param {number[]} gems the exported gem data in the correct format to feed the API
  */
 export interface gemdata {
     gems: number[]

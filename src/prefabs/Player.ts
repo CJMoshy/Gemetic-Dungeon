@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 import Inventory from "../lib/Inventory";
 //invetory goes here
 
@@ -53,9 +52,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.keys.right.isDown) {
             vector.x = 1
             this.moveStatus = 'right'
-        } 
+        }
 
-        if(vector.x === 0 && vector.y === 0){
+        if (vector.x === 0 && vector.y === 0) {
             this.moveStatus = 'none'
         }
 

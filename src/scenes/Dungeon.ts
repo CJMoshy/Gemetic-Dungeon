@@ -1,4 +1,3 @@
-import Phaser from "phaser"
 import Player from "../prefabs/Player"
 var NoiseNS = require("noisejs")
 import Gem from "../prefabs/Gem"
@@ -15,7 +14,6 @@ import { TILECODES, geneDetermine } from "../lib/Generator"
 import { sceneData } from "../lib/interfaces"
 import { buttStyle } from "./Start"
 
-
 //categorizing the codes here, for easy access during autotiling.
 const walls = [TILECODES.WALL_W, TILECODES.WALL_E, TILECODES.WALL_F, TILECODES.WALL_A]
 const hallways = [TILECODES.FLOOR_1, TILECODES.FLOOR_2, TILECODES.FLOOR_3, TILECODES.FLOOR_4]
@@ -28,7 +26,6 @@ TILECODES.WATER_D, TILECODES.WATER_U, TILECODES.WATER_L, TILECODES.WATER_R]
 const pits = [TILECODES.PIT_TILE, TILECODES.PIT_DLR, TILECODES.PIT_ULR, TILECODES.PIT_UDL, TILECODES.PIT_UDR,
 TILECODES.PIT_UL, TILECODES.PIT_UR, TILECODES.PIT_DR, TILECODES.PIT_DL,
 TILECODES.PIT_D, TILECODES.PIT_U, TILECODES.PIT_L, TILECODES.PIT_R]
-
 
 export default class DungeonScene extends Phaser.Scene {
 
@@ -64,40 +61,46 @@ export default class DungeonScene extends Phaser.Scene {
         this.load.tilemapTiledJSON('tilemapJSON', mapData)
 
         //some filler asset here for player
-        this.load.spritesheet('playerSpritesheet', player, {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('playerSpritesheet', player, { frameWidth: 32, frameHeight: 32 })
 
         //load spritesheet for gems 
         this.load.spritesheet('spritesheet', tileset, { frameWidth: 84, frameHeight: 84 });
     }
 
     create() {
-        //player animations
-        this.anims.create({
-            key: 'player-walk-up',
-            frames: this.anims.generateFrameNumbers('playerSpritesheet', {start: 20, end: 28}),
-            frameRate: 12,
-            repeat: 0
-        })
+        // Define the animations
+        const animations = [
+            {
+                key: 'player-walk-up',
+                frames: this.anims.generateFrameNumbers('playerSpritesheet', { start: 20, end: 28 }),
+                frameRate: 12,
+                repeat: 0
+            },
+            {
+                key: 'player-walk-down',
+                frames: this.anims.generateFrameNumbers('playerSpritesheet', { start: 29, end: 37 }),
+                frameRate: 12,
+                repeat: 0
+            },
+            {
+                key: 'player-walk-left',
+                frames: this.anims.generateFrameNumbers('playerSpritesheet', { start: 10, end: 19 }),
+                frameRate: 20,
+                repeat: 0
+            },
+            {
+                key: 'player-walk-right',
+                frames: this.anims.generateFrameNumbers('playerSpritesheet', { start: 0, end: 9 }),
+                frameRate: 20,
+                repeat: 0
+            }
+        ]
 
-        this.anims.create({
-            key: 'player-walk-down',
-            frames: this.anims.generateFrameNumbers('playerSpritesheet', {start: 29, end: 37}),
-            frameRate: 12,
-            repeat: 0
-        })
-
-        this.anims.create({
-            key: 'player-walk-left',
-            frames: this.anims.generateFrameNumbers('playerSpritesheet', {start: 10, end: 19}),
-            frameRate: 12,
-            repeat: 0
-        })
-
-        this.anims.create({
-            key: 'player-walk-right',
-            frames: this.anims.generateFrameNumbers('playerSpritesheet', {start: 0, end: 9}),
-            frameRate: 12,
-            repeat: 0
+        // Add animations if they don't already exist
+        animations.forEach(anim => {
+            if (!this.anims.exists(anim.key)) {
+                this.anims.create(anim)
+            }
         })
 
         const map = this.add.tilemap('tilemapJSON')
@@ -113,34 +116,34 @@ export default class DungeonScene extends Phaser.Scene {
 
         const spawn = bgLayer.findTile((tile) => tile.properties.spawn === true)
         // this.exit = bgLayer.findTile((tile) => tile.properties.exit === true)
-        
+
         bgLayer.setCollisionByProperty({ collides: true })
 
         //player
         this.player = new Player(this, (spawn.x * this.TILESIZEMULTIPLIER) + this.SPACER, (spawn.y * this.TILESIZEMULTIPLIER) + this.SPACER, 'playerSpritesheet', 33)
 
         //collides with walls, traps 
-        this.physics.add.collider(this.player, bgLayer, (player, tile)=>{
-            if(player instanceof Phaser.Tilemaps.Tile){
-              
+        this.physics.add.collider(this.player, bgLayer, (player, tile) => {
+            if (player instanceof Phaser.Tilemaps.Tile) {
+
             }
-                
-            if(tile instanceof Phaser.Tilemaps.Tile){
-                if(tile.index === 59){
+
+            if (tile instanceof Phaser.Tilemaps.Tile) {
+                if (tile.index === 59) {
                     const data: sceneData = {
-                                inv: this.player.inventory,
-                                curGene: DUNGEON.getCurrentGene()
+                        inv: this.player.inventory,
+                        curGene: DUNGEON.getCurrentGene()
                     }
                     this.scene.start('IntermissionScene', data)
                 }
             }
         })
-       
+
 
         //camera
         this.cameras.main.startFollow(this.player, false, 0.05, 0.05, 0, 0)
-        this.cameras.main.setBounds(0,0,map.widthInPixels, map.heightInPixels)
-        this.physics.world.setBounds(0,0,map.widthInPixels, map.heightInPixels)
+        this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
+        this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
 
         doOverlayTiles(this, map)
         this.spawnGems()
@@ -152,24 +155,24 @@ export default class DungeonScene extends Phaser.Scene {
         this.fireText = this.add.text(this.sys.canvas.width - 175, 50, 'Fire: ', buttStyle).setScrollFactor(0)
         this.airText = this.add.text(this.sys.canvas.width - 175, 80, 'Air: ', buttStyle).setScrollFactor(0)
         this.earthText = this.add.text(this.sys.canvas.width - 175, 110, 'Earth: ', buttStyle).setScrollFactor(0)
-        this.waterText = this.add.text(this.sys.canvas.width - 175, 140, 'Water: ', buttStyle).setScrollFactor(0)        
+        this.waterText = this.add.text(this.sys.canvas.width - 175, 140, 'Water: ', buttStyle).setScrollFactor(0)
     }
 
-   
-    update(time: number, delta: number): void {    
+
+    update(time: number, delta: number): void {
         this.fireText.setText('Fire: ' + this.player.inventory.get('F'))
         this.airText.setText('Air: ' + this.player.inventory.get('A'))
         this.earthText.setText('Earth: ' + this.player.inventory.get('E'))
-        this.waterText.setText('Water: ' + this.player.inventory.get('W')) 
+        this.waterText.setText('Water: ' + this.player.inventory.get('W'))
         this.player.update()
-        
-        if(this.currentMoveDir !== this.player.moveStatus){
+
+        if (this.currentMoveDir !== this.player.moveStatus) {
             this.player.anims.stop()
             this.currentMoveDir = this.player.moveStatus
         }
 
-        if(!this.player.anims.isPlaying){
-            switch(this.player.moveStatus){
+        if (!this.player.anims.isPlaying) {
+            switch (this.player.moveStatus) {
                 case 'up':
                     this.player.anims.play('player-walk-up')
                     break
@@ -186,12 +189,12 @@ export default class DungeonScene extends Phaser.Scene {
                     break
             }
         }
-        
+
     }
 
     spawnGems(): void {
         let gemsRef = DUNGEON.getCurrentGems()
-        gemsRef.forEach( (e: any) => {
+        gemsRef.forEach((e: any) => {
             //map the numbers to a certain gem sprite on the sheet 
             let frame
             switch (e[2].toString()) {
@@ -220,7 +223,7 @@ export default class DungeonScene extends Phaser.Scene {
         })
     }
 
-    
+
 
 }
 
@@ -272,7 +275,7 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
                 }
             }
             //new case: add deco under /over firepit.
-            if(_tile.index == TILECODES.BRAZIER){
+            if (_tile.index == TILECODES.BRAZIER) {
                 map.putTileAt(bgFloors[geneDetermine(DUNGEON.getMainTheme(), 0, 1, 2, 3)], _tile.x, _tile.y, true, "Decoration")
                 map.putTileAt(TILECODES.BRAZIER, _tile.x, _tile.y, true, "PitDeco2")
             }
@@ -305,36 +308,36 @@ function checkVsWall(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap) 
     if (code == 3) {
         map.putTileAt(TILECODES.WALL_D, _tile.x, _tile.y, false, "WallDeco2")
     }
-    else if (code == 12){
-        map.putTileAt(TILECODES.WALL_R, _tile.x, _tile.y,false, "WallDeco2")
+    else if (code == 12) {
+        map.putTileAt(TILECODES.WALL_R, _tile.x, _tile.y, false, "WallDeco2")
     }
 }
 function checkVsPuddle(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap) {
     let code = getTileCode(_tile, puddles, map)
     if (code == -1) { return }
     map.putTileAt(PUDDLE_VS_PUDDLE[code], _tile.x, _tile.y, false, "WaterDeco")
-    if (code == 0){
+    if (code == 0) {
         map.putTileAt(TILECODES.WATER_U, _tile.x, _tile.y, false, "WaterDeco2")
     }
     if (code == 3) {
         map.putTileAt(TILECODES.WATER_R, _tile.x, _tile.y, false, "WaterDeco2")
     }
-    else if (code == 12){
-        map.putTileAt(TILECODES.WATER_D, _tile.x, _tile.y,false, "WaterDeco2")
+    else if (code == 12) {
+        map.putTileAt(TILECODES.WATER_D, _tile.x, _tile.y, false, "WaterDeco2")
     }
 }
 function checkVsPit(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap) {
     let code = getTileCode(_tile, pits, map)
     if (code == -1) { return }
-    if (code == 0){
+    if (code == 0) {
         map.putTileAt(TILECODES.PIT_U, _tile.x, _tile.y, false, "PitDeco2")
     }
     map.putTileAt(PIT_VS_PIT[code], _tile.x, _tile.y, false, "PitDeco")
     if (code == 3) {
         map.putTileAt(TILECODES.PIT_R, _tile.x, _tile.y, false, "PitDeco2")
     }
-    else if (code == 12){
-        map.putTileAt(TILECODES.PIT_D, _tile.x, _tile.y,false, "PitDeco2")
+    else if (code == 12) {
+        map.putTileAt(TILECODES.PIT_D, _tile.x, _tile.y, false, "PitDeco2")
     }
 }
 
@@ -411,6 +414,6 @@ function getTileCode(_tile: Phaser.Tilemaps.Tile, target: number[], map: Phaser.
     return retVal
 }
 
-function createOverlayUI(){
+function createOverlayUI() {
 
 }
