@@ -41,15 +41,17 @@ export default function geneticAlgorithm(inventory: string, currentCode: string,
 
     //replace the current room gene's elements with the forced variation pattern
     //water -> earth -> fire -> air -> water
-    for(let l = 0; l < currentList.length; l++){
-        if(currentList[l] == "W") {
-            currentList[l] = "E"
-        } else if(currentList[l] == "E") {
-            currentList[l] = "F"
-        } else if(currentList[l] == "F") {
-            currentList[l] = "A"
-        } else if(currentList[l] == "A") {
-            currentList[l] = "W"
+    for(let l = 0; l < currentList.length - 1; l++){
+        if((Math.random() * 2) > 1){
+            if(currentList[l] == "W") {
+                currentList[l] = "E"
+            } else if(currentList[l] == "E") {
+                currentList[l] = "F"
+            } else if(currentList[l] == "F") {
+                currentList[l] = "A"
+            } else if(currentList[l] == "A") {
+                currentList[l] = "W"
+            }
         }
     }
     let newCode = punnet(invList, currentList, seed)
