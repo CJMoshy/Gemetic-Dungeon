@@ -226,6 +226,9 @@ function checkVsPuddle(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap
     let code = getTileCode(_tile, puddles, map)
     if (code == -1) { return }
     map.putTileAt(PUDDLE_VS_PUDDLE[code], _tile.x, _tile.y, false, "WaterDeco")
+    if (code == 0){
+        map.putTileAt(TILECODES.WATER_U, _tile.x, _tile.y, false, "WaterDeco2")
+    }
     if (code == 3) {
         map.putTileAt(TILECODES.WATER_R, _tile.x, _tile.y, false, "WaterDeco2")
     }
@@ -236,6 +239,9 @@ function checkVsPuddle(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap
 function checkVsPit(_tile: Phaser.Tilemaps.Tile, map: Phaser.Tilemaps.Tilemap) {
     let code = getTileCode(_tile, pits, map)
     if (code == -1) { return }
+    if (code == 0){
+        map.putTileAt(TILECODES.PIT_U, _tile.x, _tile.y, false, "PitDeco2")
+    }
     map.putTileAt(PIT_VS_PIT[code], _tile.x, _tile.y, false, "PitDeco")
     if (code == 3) {
         map.putTileAt(TILECODES.PIT_R, _tile.x, _tile.y, false, "PitDeco2")
@@ -319,5 +325,5 @@ function getTileCode(_tile: Phaser.Tilemaps.Tile, target: number[], map: Phaser.
 }
 
 function createOverlayUI(){
-    
+
 }

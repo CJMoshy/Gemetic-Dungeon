@@ -42,7 +42,10 @@ export class Dungeon {
     private maxH = 100
     private seedStr: string;
     private seed: number;
-    constructor(_seed: string, initialGene: string) { //The seed should be pulled from DOM, initialGene comes out of CJ's map.
+    constructor() { 
+        //this is now empty, so that main.ts can create an empty dungeon.
+    }
+    public initialize(_seed: string, initialGene: string){//The seed should be pulled from DOM, initialGene comes out of CJ's map.
         this.seedStr = _seed
         this.seed = XXH.h64(this.seedStr, 0)._a00 * XXH.h64(this.seedStr, 0)._a16 * XXH.h64(this.seedStr, 0)._a32 * XXH.h64(this.seedStr, 0)._a48
         // console.log("dungon: result of hash =", this.seed)
@@ -54,7 +57,6 @@ export class Dungeon {
         this.currentRoomTilemap = this.currentRoom.parseRoom()
         // console.log(this.currentRoomTilemap)
     }
-
     public getSeed(): number {
         return this.seed
     }

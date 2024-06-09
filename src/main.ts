@@ -30,6 +30,6 @@ const CONFIG = {
 
 export default CONFIG
 
-export const DUNGEON = new Gen.Dungeon((Math.random() * 4294967296).toString(), "WAFWWWWF") //seed: get from dom. gene: get from neural map
+export var DUNGEON = new Gen.Dungeon() //now creates an empty dungeon so Start.ts can initialize() 
 
 const GAME = new Phaser.Game(CONFIG)

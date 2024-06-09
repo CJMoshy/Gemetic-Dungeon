@@ -2,6 +2,9 @@ import Phaser from "phaser";
 import { DUNGEON } from "../main";
 import { sceneData } from "../lib/interfaces";
 
+import { tempGeneMaker } from "../lib/Generator";
+import * as XXH from "../lib/xxhash.min.js";
+
 import fake1 from "../assets/img/fake-1.png"
 import fake2 from "../assets/img/fake-2.png"
 import fake3 from "../assets/img/fake-3.png"
@@ -26,6 +29,7 @@ export default class StartScene extends Phaser.Scene {
     credits:Phaser.GameObjects.Text
     seedInput:Phaser.GameObjects.Text
     hasEnteredSeed:boolean = false
+    userSeed:string
     constructor() {
         super({ key: 'StartScene' })
     }
@@ -103,7 +107,11 @@ export default class StartScene extends Phaser.Scene {
         this.creditsB.setName("creditsB")
 
 
-        this.startB.on("pointerdown",()=>{    if(this.hasEnteredSeed){this.scene.start("DungeonScene")}
+        this.startB.on("pointerdown",()=>{    if(this.hasEnteredSeed){
+            let genee = XXH.h64(this.userSeed, 0)._a00 * XXH.h64(this.userSeed, 0)._a16 * XXH.h64(this.userSeed, 0)._a32 * XXH.h64(this.userSeed, 0)._a48
+
+            DUNGEON.initialize(this.userSeed, tempGeneMaker(genee))
+            this.scene.start("DungeonScene")}
         }, this)
          
         this.creditsB.on("pointerdown", ()=>{console.log("in creditsB pdown"); this.credits.setVisible(!this.credits.visible)}, this)
@@ -116,7 +124,7 @@ export default class StartScene extends Phaser.Scene {
     update(time: number, delta: number): void {
         //casting help from https://stackoverflow.com/questions/12989741/the-property-value-does-not-exist-on-value-of-type-htmlelement
         var inputValue = (<HTMLInputElement>document.getElementById("playerSeedEntry")).value;
-        if( this.hasEnteredSeed = inputValue != "") {this.seedInput.text = "Seed:  " + inputValue ;} else {
+        if( this.hasEnteredSeed = inputValue != "") {this.seedInput.text = "Seed:  " + inputValue ; this.userSeed = inputValue} else {
          this.seedInput.text = "Enter a seed in the DOM input below before starting."   
         }
     }
