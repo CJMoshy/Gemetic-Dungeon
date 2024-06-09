@@ -62,7 +62,7 @@ export default class StartScene extends Phaser.Scene {
      * @param {sceneData} data exported data from the last scene, containg both the players inventory and the previous rooms gene
      */
     init(data: sceneData): void {
-
+        (<HTMLInputElement>document.getElementById("playerSeedEntry")).value = ""
     }
 
     

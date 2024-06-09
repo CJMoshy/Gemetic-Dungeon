@@ -31,5 +31,5 @@ const CONFIG = {
 export default CONFIG
 
 export var DUNGEON = new Gen.Dungeon() //now creates an empty dungeon so Start.ts can initialize() 
-
-const GAME = new Phaser.Game(CONFIG)
+window.addEventListener('load', () => {const GAME = new Phaser.Game(CONFIG)});
+//const GAME = new Phaser.Game(CONFIG)
