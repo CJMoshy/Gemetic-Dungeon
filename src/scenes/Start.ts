@@ -8,6 +8,8 @@ import fake3 from "../assets/img/fake-3.png"
 import fake4 from "../assets/img/fake-4.png"
 
 
+
+
 /**
  * @class StartScene the beginning scene for the game, main menu and seed input
  */
@@ -22,6 +24,8 @@ export default class StartScene extends Phaser.Scene {
     creditsB: Phaser.GameObjects.Text
     startB: Phaser.GameObjects.Text
     credits:Phaser.GameObjects.Text
+    seedInput:Phaser.GameObjects.Text
+    hasEnteredSeed:boolean = false
     constructor() {
         super({ key: 'StartScene' })
     }
@@ -54,6 +58,7 @@ export default class StartScene extends Phaser.Scene {
         }
         console.log(url)
         const fakeTmapImg = this.load.image("fakeTmapImg",url)
+
     }
     create(): void {
 
@@ -86,8 +91,11 @@ export default class StartScene extends Phaser.Scene {
         this.titleText = this.add.text(this.sys.canvas.width / 2, this.sys.canvas.height / 3, 'Gem-etic Dungeon', titleStyle).setAlign("center").setOrigin(0.5, 0.5)
         this.startB = this.add.text(this.sys.canvas.width / 3 + 50, this.sys.canvas.height / 2, "Start!", buttStyle).setOrigin(0.5, 0.5)
         this.creditsB = this.add.text(this.sys.canvas.width *2/3 - 50, this.sys.canvas.height / 2, "Credits", buttStyle).setOrigin(0.5, 0.5)
-        let credText = 'LOREM IPSUM CREDITS'
-        this.credits = this.add.text(this.sys.canvas.width *2 - 50, this.sys.canvas.height/4 * 3, "RAAHHHHHHHHH", buttStyle).setOrigin(0.5, 0.5)
+        let credText = `Alex Leghart, CJ Moshy, Elton Zheng, Liam Murray, Qizhe Lao`
+        this.credits = this.add.text(this.sys.canvas.width /2 - 50, this.sys.canvas.height*2/3 + 10, credText, buttStyle).setOrigin(0.5, 0.5)
+        this.credits.setVisible(false)
+
+
 
         this.startB.setInteractive()
         this.startB.setName("startB")
@@ -95,16 +103,22 @@ export default class StartScene extends Phaser.Scene {
         this.creditsB.setName("creditsB")
 
 
-        this.startB.on("pointerdown",()=>{    this.scene.start("DungeonScene")
+        this.startB.on("pointerdown",()=>{    if(this.hasEnteredSeed){this.scene.start("DungeonScene")}
         }, this)
          
         this.creditsB.on("pointerdown", ()=>{console.log("in creditsB pdown"); this.credits.setVisible(!this.credits.visible)}, this)
 
-      
-        //this.credits.setVisible(false)
+        //from phaser examples
+
+        this.seedInput = this.add.text(this.sys.canvas.width /2 - 50, this.sys.canvas.height*2/3 + 50, "Enter a seed in the DOM input below before starting.", buttStyle).setOrigin(0.5)
+       
      }
     update(time: number, delta: number): void {
-
+        //casting help from https://stackoverflow.com/questions/12989741/the-property-value-does-not-exist-on-value-of-type-htmlelement
+        var inputValue = (<HTMLInputElement>document.getElementById("playerSeedEntry")).value;
+        if( this.hasEnteredSeed = inputValue != "") {this.seedInput.text = "Seed:  " + inputValue ;} else {
+         this.seedInput.text = "Enter a seed in the DOM input below before starting."   
+        }
     }
 
     

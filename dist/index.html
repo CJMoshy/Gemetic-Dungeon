@@ -11,7 +11,7 @@
     <div id="phaser-game" style="border: 5px solid red; padding: auto;"></div>
     <div>
         <label for="playerSeedEntry">Enter a String:</label>
-        <input type="text" id="playerSeedEntry"/>
+        <input type="text" id="playerSeedEntry" maxlength="32"/>
     </div>
     <script>
         function submitMe(input){
@@ -19,7 +19,7 @@
             return input 
         }
     </script>
-    <button onclick = "submitMe(document.getElementById('playerSeedEntry').value)" id ="testButton">Submit</button>
+    <!--<button onclick = "submitMe(document.getElementById('playerSeedEntry').value)" id ="testButton">Submit</button>-->
     
 </form>
 </body>
