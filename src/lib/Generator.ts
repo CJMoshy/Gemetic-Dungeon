@@ -733,10 +733,13 @@ class Room {
         this.gemCenters.forEach(element => { //now places one exit per room, for navigation purposes.
             randX = Math.floor(element[1] + this.r.getR(4) - 2)
             randY = Math.floor(element[0] + this.r.getR(4) - 2)
-            while (this.tiles[randY][randX] != ",") {
+            let tries = 0
+            while (this.tiles[randY][randX] != "," && tries <= 20) {
                 randX = Math.floor(element[1] + this.r.getR(4) - 2)
                 randY = Math.floor(element[0] + this.r.getR(4) - 2)
-            }
+                tries++
+            } 
+            if (tries > 20) {return} //all positions blocked, likely due to puddle or pit. preventing an infi loop.
             this.exit.push([randY, randX])
             this.tiles[randY][randX] = "e" //e for exit
         });
@@ -801,7 +804,7 @@ class Room {
     private fillRoomDiamond(currCenter: number[], currRadius: number, context: Room) {
         //valid center has already been ensured by center creator func
         //fill radius of map around point with floor tiles, diamond style.
-        let top = currCenter[0] - currRadius,
+        let top = currCenter[0] - currRadius - 1,
             bottom = currCenter[0] + currRadius
         let width = 0
         for (let row = top; row <= bottom; row++) {
