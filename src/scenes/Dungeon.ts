@@ -88,6 +88,9 @@ export default class DungeonScene extends Phaser.Scene {
         // this.physics.add.collider(this.player, bgLayer)
         //spawn in the gems with the algorithm 
         this.spawnGems()
+
+        //create ui & gamification
+        createOverlayUI()
     }
 
     update(time: number, delta: number): void {
@@ -313,4 +316,8 @@ function getTileCode(_tile: Phaser.Tilemaps.Tile, target: number[], map: Phaser.
     let retVal = nb + sb + eb + wb
     //console.log(retVal)
     return retVal
+}
+
+function createOverlayUI(){
+    
 }
