@@ -85,6 +85,9 @@ export class Dungeon {
     public getObstacleStyle(): string {
         return this.currentRoom.obstacleType
     }
+    public getWallDeco():string {
+        return this.currentRoom.wallDeco
+    }
     public getMainTheme(): string {
         return this.currentRoom.theme
     }

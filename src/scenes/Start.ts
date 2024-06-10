@@ -77,7 +77,7 @@ export default class StartScene extends Phaser.Scene {
                 url = fake4
                 break;
         }
-        console.log(url)
+        // console.log(url)
         const fakeTmapImg = this.load.image("fakeTmapImg", url)
 
     }
@@ -94,8 +94,8 @@ export default class StartScene extends Phaser.Scene {
         this.titleText = this.add.text(this.sys.canvas.width / 2, this.sys.canvas.height / 3, 'Gem-etic Dungeon', titleStyle).setAlign("center").setOrigin(0.5, 0.5)
         this.startB = this.add.text(this.sys.canvas.width / 3 + 50, this.sys.canvas.height / 2, "Start!", buttStyle).setOrigin(0.5, 0.5)
         this.creditsB = this.add.text(this.sys.canvas.width * 2 / 3 - 50, this.sys.canvas.height / 2, "Credits", buttStyle).setOrigin(0.5, 0.5)
-        let credText = `Alex Leghart, CJ Moshy, Elton Zheng, Liam Murray, Qizhe Lao`
-        this.credits = this.add.text(this.sys.canvas.width / 2 - 50, this.sys.canvas.height * 2 / 3 + 10, credText, buttStyle).setOrigin(0.5, 0.5)
+        let credText = `Programming: alhinator, CJMoshy, EltZ36, lmurray045\nArt: Expertzzzz`
+        this.credits = this.add.text(this.sys.canvas.width / 2 - 50, this.sys.canvas.height*3/5, credText, buttStyle).setOrigin(0.5, 0.5)
         this.credits.setVisible(false)
 
 
@@ -115,7 +115,7 @@ export default class StartScene extends Phaser.Scene {
             }
         }, this)
 
-        this.creditsB.on("pointerdown", () => { console.log("in creditsB pdown"); this.credits.setVisible(!this.credits.visible) }, this)
+        this.creditsB.on("pointerdown", () => { /*console.log("in creditsB pdown");*/ this.credits.setVisible(!this.credits.visible) }, this)
 
         //from phaser examples
 

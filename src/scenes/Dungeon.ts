@@ -247,8 +247,32 @@ function doOverlayTiles(context: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
 
         let doDeco = false
         if (walls.includes(_tile.index)) { //add a variation of wall_null
-            map.putTileAt(TILECODES.WALL_NULL, _tile.x, _tile.y, true, "Decoration")
-            let c = map.getTileAt(_tile.x, _tile.y, true, "Decoration").setAlpha(Math.abs(overlayNoise.perlin2(_tile.x / 10, _tile.y / 10)) / 2 + 0.5)
+            //console.log(DUNGEON.getWallDeco())
+            let alpha
+            switch (DUNGEON.getWallDeco()) {
+                case "W": //perlin noise style
+                    map.putTileAt(TILECODES.WALL_NULL, _tile.x, _tile.y, true, "Decoration")
+                    map.getTileAt(_tile.x, _tile.y, true, "Decoration").setAlpha(Math.abs(overlayNoise.perlin2(_tile.x / 10, _tile.y / 10)) / 2 + 0.5)
+                    break;
+                case "E": //tiles
+                    alpha = _tile.x % 2 == _tile.y % 2 ? 0.8 : 0.4
+                    map.putTileAt(TILECODES.WALL_NULL, _tile.x, _tile.y, true, "Decoration")
+                    map.getTileAt(_tile.x, _tile.y, true, "Decoration").setAlpha(alpha)
+                    break;
+                case "F": //perlin plus cracked at random
+                    map.putTileAt(TILECODES.WALL_NULL, _tile.x, _tile.y, true, "Decoration")
+                    map.getTileAt(_tile.x, _tile.y, true, "Decoration").setAlpha(Math.abs(overlayNoise.perlin2(_tile.x / 10, _tile.y / 10)) / 2 + 0.5)
+                    if (Math.random() < 0.01) { map.putTileAt(TILECODES.FLOOR_4T, _tile.x, _tile.y, true, "WaterDeco2") }
+
+                    break;
+                case "A": //simple rand
+                    alpha = Math.random() * 0.7 + 0.2
+                    map.putTileAt(TILECODES.WALL_NULL, _tile.x, _tile.y, true, "Decoration")
+                    map.getTileAt(_tile.x, _tile.y, true, "Decoration").setAlpha(alpha)
+                    break;
+
+            }
+
         }
         if (hallways.includes(_tile.index) || (doDeco = (bgFloors.includes(_tile.index))) || specialFloors.includes(_tile.index)) {
             if (doDeco) {

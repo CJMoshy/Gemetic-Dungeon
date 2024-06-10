@@ -9,7 +9,8 @@ const CONFIG = {
     parent: 'phaser-game',
     scale: {
         autoCenter: Phaser.Scale.CENTER_BOTH,
-        size: Phaser.Scale.FIT
+        size: Phaser.Scale.FIT,
+        zoom: 0.75
     },
     pixelArt: true,
     physics: {
