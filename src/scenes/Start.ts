@@ -31,6 +31,7 @@ export const buttStyle = {
 
 }
 
+
 /**
  * @class StartScene the beginning scene for the game, main menu and seed input
  */
